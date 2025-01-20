@@ -40,6 +40,18 @@
 
 ## Section 02 - basics -> project teaching getUserMedia 
 6. Project file setup - (3min)
+
+<img
+src='exercise_files/section02-06-project-playground-index-html.png'
+alt='section02-06-project-playground-index-html.png'
+width=600
+/>
+
+- copy from given code:
+  - gumplayground/index.html
+  - gumplayground/scripts.js
+  - gumplayground/styles.css
+
 7. getUserMedia - where everything starts - (13min)
 8. play the feed, getTracks(), and MediaStreamTracks - (7min)
 9. A few UI updates - (9min)
