@@ -52,7 +52,111 @@ width=600
   - gumplayground/scripts.js
   - gumplayground/styles.css
 
-7. getUserMedia - where everything starts - (13min)
+7. getUserMedia() - where everything starts - (13min)
+- getUserMedia() requires you to use `https` (secure context)
+
+```js
+async function getMedia(constraints) {
+  let stream = null;
+
+  try {
+    stream = await navigator.mediaDevices.getUserMedia(constraints);
+    /* use the stream */
+  } catch (err) {
+    /* handle the error */
+  }
+}
+
+```
+
+- [MediaDevices](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices)
+- provides access to connected media input devices like cameras and microphones, as well as screen sharing.
+- prompts user for permission
+- obtain access to any `hardware source` `of media data`
+
+- `MediaDevices` belongs to `navigator.mediaDevices.getUserMedia()`
+- `Navigator` - Navigator interface represents the `state` and the identity of the `user agent (browser)`. 
+  - It allows scripts to query it and to register themselves to carry on some activities.
+  - part of global scope (`window.navigator.` / `navigator.`)
+
+  - Navigator.connection 
+  - Navigator.geolocation
+  - Navigator.mediaDevices
+  - Navigator.mediaCapabilities
+  - Navigator.mediaSession
+
+<img
+src='exercise_files/section02-07-project-playground-webrtc-getUserMedia.jpg'
+alt='section02-07-project-playground-webrtc-getUserMedia.jpg'
+width=600
+/>
+
+### Contraints
+- application can request the camera and microphone capabilities it needs and wants, using additional constraints
+- `audio:true` -> has audio feedback so use earphones
+
+```html
+<!-- index.html -->
+<button id="share" class="btn btn-primary d-block mb-1">Share my mic and camera</button>
+```
+
+```js
+//src/gumplayground/script.js
+
+let stream = null;
+
+const constraints = {
+  audio: true, //audio feedback (reverb) use HEADPHONES
+  video: true
+}
+
+const getMicAndCamera = async (e) => {
+  try{
+    stream = await navigator.mediaDevices.getUserMedia(constraints);
+  }
+  catch{
+    console.log('user denied access to contraints')
+  }
+}
+
+//attach event handler
+document.querySelector('#share').addEventListener('click', getMicAndCamera)
+```
+
+### TROUBLESHOOT
+- while testing, in windows: your camera and microphone must be on:
+- settings -> camera privacy settings -> camera access -> ON
+- settings -> microphone privacy settings -> microphone access -> ON
+- Expect:
+```bash
+# console log
+MediaStream {id: '33c6bd0a-95e1-4951-88c4-62ce312d8cef', active: true, onaddtrack: null, onremovetrack: null, onactive: null, …}
+```
+
+### Other constraints
+#### video contraints
+- an application can request the camera and microphone capabilities it needs and wants:
+  - `constraints = { audio: true, video: { width: 1280, height: 720 } }`
+
+#### ideal
+- `ideal` value, when used, has gravity — which means that the browser will try to find the setting (and camera, if you have more than one), with the smallest fitness distance
+  - `constraints = { audio: true, video: { width: { ideal: 1280 }, height: { ideal: 720 }}`
+
+#### front camera
+- on mobile devices, the following will prefer the `front camera` (if one is available) over the rear one:
+  - `constraints = { audio: true, video: { facingMode: "user" }}`
+
+#### rear camera
+- `constraints = { audio: true, video: { facingMode: { exact: "environment" }}}`
+
+#### requesting camera by id or if not available, a different camera 
+- `deviceId` constraint. If you have a deviceId from `mediaDevices.enumerateDevices()`, you can use it to request a specific device
+- return the camera you requested, or a different camera if that specific camera is no longer available
+- `constraints = {video: { deviceId: myPreferredCameraDeviceId }}`
+
+#### requesting an exact camera by deviceid
+- `constraints = { video: {deviceId: {exact: myExactCameraOrBustDeviceId } }}`
+
 8. play the feed, getTracks(), and MediaStreamTracks - (7min)
 9. A few UI updates - (9min)
 10. Constraints overview - getSupportedConstraints() and getCapabilities() - (10min)
