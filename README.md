@@ -158,6 +158,65 @@ MediaStream {id: '33c6bd0a-95e1-4951-88c4-62ce312d8cef', active: true, onaddtrac
 - `constraints = { video: {deviceId: {exact: myExactCameraOrBustDeviceId } }}`
 
 8. play the feed, getTracks(), and MediaStreamTracks - (7min)
+- TODO: putting the stream in videoEl: `<video id="videoEl">`
+- `showMyFeed()` -> set our MediaStream (stream) to our video tag `videoEl.srcObject = stream;`
+
+#### where is the video and audio source?
+- `getTracks()` -> gets everything (gets each individual track part of media stream that came from getUserMedia)
+
+```bash output
+(2) [MediaStreamTrack, MediaStreamTrack]
+0: MediaStreamTrack {kind: 'audio', id: '7e9619ee-95e0-4f3a-93d2-0736da61dc4f', label: 'Default - Microphone Array (Realtek(R) Audio)', enabled: true, muted: false, …}
+1: MediaStreamTrack {kind: 'video', id: '8fc0682b-b8e4-4a01-9f51-d863ad5acc60', label: 'Integrated Camera (13d3:56a6)', enabled: true, muted: false, …}
+length: 2
+```
+
+- `getAudioTracks()` -> gets audio
+- `getVideoTracks()` -> gets video
+
+#### stopping the video feed
+- MediaStreamTrack `.stop()` -> disassociates track with the source
+
+
+```js
+//script.js
+const videoEl = document.querySelector('#my-video');
+let stream = null;
+
+const constraints = {
+  audio: true, //audio feedback (reverb) use HEADPHONES
+  video: true
+}
+
+const getMicAndCamera = async (e) => {
+  try{
+    stream = await navigator.mediaDevices.getUserMedia(constraints);
+    console.log(stream);
+  }
+  catch(error){
+    console.log('user denied access to contraints:', error);
+  }
+};
+
+const showMyFeed = async (e) => {
+  videoEl.srcObject = stream; //this will set our MediaStream (stream) to our video tag
+  const tracks = stream.getTracks();
+  console.log(tracks);
+}
+
+const stopMyFeed = e => {
+  const tracks = stream.getTracks();  
+  tracks.forEach(track => {
+    // console.log(track);
+    track.stop(); //disassociates track with the source
+  })
+}
+
+document.querySelector('#share').addEventListener('click', e => getMicAndCamera(e));
+document.querySelector('#show-video').addEventListener('click', e=> showMyFeed(e));
+document.querySelector('#stop-video').addEventListener('click', e=> stopMyFeed(e));
+```
+
 9. A few UI updates - (9min)
 10. Constraints overview - getSupportedConstraints() and getCapabilities() - (10min)
 11. Changing resolution, framerate, aspect ratio - applyConstraints() - (8min)
