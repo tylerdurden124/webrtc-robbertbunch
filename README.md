@@ -218,6 +218,22 @@ document.querySelector('#stop-video').addEventListener('click', e=> stopMyFeed(e
 ```
 
 9. A few UI updates - (9min)
+- NOTE: this is JavaScript DOM manipulation (imperative). 
+  - react is declarative and is easier ways to do this
+
+
+### JS - Imperative approach
+- adding `changeButtons.js` to `index.html`
+- deals css styling (resets css styling and sets what is necessary)
+  - green = btn-success
+  - blue = btn-primary
+  - grey = btn-secondary
+  - red = btn-danger
+
+- NOTE: my eyes are bleeding watching this...why?
+  - the implementation of changeButtons: you are passing an array of meaningless strings (colors) to associate with `buttonsById` 
+  - you have to physically adjust each element in array
+
 10. Constraints overview - getSupportedConstraints() and getCapabilities() - (10min)
 11. Changing resolution, framerate, aspect ratio - applyConstraints() - (8min)
 12. Recording a feed - MediaRecorder and webRTC - (13min)

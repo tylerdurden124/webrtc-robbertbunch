@@ -10,6 +10,10 @@ const getMicAndCamera = async (e) => {
   try{
     stream = await navigator.mediaDevices.getUserMedia(constraints);
     console.log(stream);
+
+    changeButtons([
+      'green', 'blue', 'blue', 'grey', 'grey', 'grey', 'grey', 'grey'
+    ])
   }
   catch(error){
     console.log('user denied access to contraints:', error);
@@ -17,17 +21,35 @@ const getMicAndCamera = async (e) => {
 };
 
 const showMyFeed = async (e) => {
+  if(!stream){
+    alert('stream still loading');
+    return;
+  }
+
   videoEl.srcObject = stream; //this will set our MediaStream (stream) to our video tag
   const tracks = stream.getTracks();
   console.log(tracks);
+
+  changeButtons([
+    'green', 'green', 'blue', 'blue', 'blue', 'grey', 'grey', 'blue'
+  ])
 }
 
 const stopMyFeed = e => {
+  if(!stream){
+    alert('stream still loading');
+    return;
+  }
+
   const tracks = stream.getTracks();  
   tracks.forEach(track => {
     // console.log(track);
     track.stop(); //disassociates track with the source
-  })
+  });
+
+  changeButtons([
+    'blue', 'grey', 'grey', 'grey', 'grey', 'grey', 'grey', 'grey'
+  ])
 }
 
 document.querySelector('#share').addEventListener('click', e => getMicAndCamera(e));
