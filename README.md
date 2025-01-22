@@ -332,7 +332,149 @@ const vConstraints = {
 - ensure `windows` -> `settings` for `microphone privacy` and `camera privacy` is set to `on`
 
 ### 12. Recording a feed - MediaRecorder and webRTC - (13min)
+- NOTE: web apis -> `MediaStream Recording api` (aka `Media Recording API`, `MediaRecorder API`) for start recording, stop recording
+  - `MediaRecorder`
+- NOTE: web apis -> `WebRTC api` is at same level `MediaStream Recording api` in `mdn docs`
+- NOTE: `MediaStream` is not part of `WebRTC api` because `MediaDevices.getUserMedia()` creates it
+- so MediaStream recording API is meant to work with `MediaStream` or `HTMLMediaElement`
+
+- we create `src/gumplayground/screenRecorder.js`
+- we add this to index.js
+```js
+// screenRecorder.js
+const startRecording = () => {}
+const stopRecording = () => {}
+const playRecording = () => {}
+```
+- we add the listener to scripts.js
+```js
+//...
+document.querySelector('#start-record').addEventListener('click', e=>startRecording(e));
+document.querySelector('#stop-record').addEventListener('click', e=>stopRecording(e));
+document.querySelector('#play-record').addEventListener('click', e=>playRecording(e));
+```
+
+### MediaRecorder
+- [mdn docs](https://developer.mozilla.org/en-US/docs/Web/API/MediaRecorder/MediaRecorder)
+- `const mediaRecorder = new MediaRecorder(stream)`
+- you have to pass a stream 
+- can also pass options
+  - mimeType -> format for resulting media / codec
+- instance methods
+- events
+
+```js
+// src/gumplayground/screenRecorder.js
+let mediaRecorder;
+let recordedBlobs;
+
+const startRecording = () => {
+  if (!stream) {
+    //you could use mediaStream!
+    alert("No current feed");
+    return;
+  }
+  console.log("Start recording");
+  recordedBlobs = []; // an array to hold the blobs for playback
+  //you could use mediaStream to record!
+  mediaRecorder = new MediaRecorder(stream); //make a mediaRecorder from the constructor
+  mediaRecorder.ondataavailable = (e) => {
+    //ondataavailable will run when the stream ends, or stopped, or we specifically ask for it
+    console.log("Data is available for the media recorder!");
+    recordedBlobs.push(e.data);
+  };
+  mediaRecorder.start();
+  changeButtons([
+    "green",
+    "green",
+    "blue",
+    "blue",
+    "green",
+    "blue",
+    "grey",
+    "blue",
+  ]);
+};
+
+const stopRecording = () => {
+  if (!mediaRecorder) {
+    alert("Please record before stopping!");
+    return;
+  }
+  console.log("stop recording");
+  mediaRecorder.stop();
+  changeButtons([
+    "green",
+    "green",
+    "blue",
+    "blue",
+    "green",
+    "green",
+    "blue",
+    "blue",
+  ]);
+};
+
+const playRecording = () => {
+  console.log("play recording");
+  if (!recordedBlobs) {
+    alert("No Recording saved");
+    return;
+  }
+  const superBuffer = new Blob(recordedBlobs); // superBuffer is a super buffer of our array of blobs
+  const recordedVideoEl = document.querySelector("#other-video");
+  recordedVideoEl.src = window.URL.createObjectURL(superBuffer);
+  recordedVideoEl.controls = true;
+  recordedVideoEl.play();
+  changeButtons([
+    "green",
+    "green",
+    "blue",
+    "blue",
+    "green",
+    "green",
+    "green",
+    "blue",
+  ]);
+};
+
+```
+
 ### 13. Update buttons - (5min)
+- see code at lesson 12
+- move changeButtons from showMyFeed() and add to screenRecorder -> startRecording()
+- TODO: add `src/gumplayground/shareScreen.js`
+- script.js -> add listener for `share-screen` button `document.querySelector('#share-screen').addEventListener('click', e=>shareScreen(e));`
+
+```js
+// shareScreen.js
+const shareScreen = async () => {
+  const options = {
+    video: true,
+    audio: false,
+    surfaceSwitching: "include", //include/exclude NOT true/false
+  };
+  try {
+    mediaStream = await navigator.mediaDevices.getDisplayMedia(options);
+  } catch (err) {
+    console.log(err);
+  }
+
+  //we don't handle all button paths. To do so, you'd need
+  //to check the DOM or use a UI framework.
+  changeButtons([
+    "green",
+    "green",
+    "blue",
+    "blue",
+    "green",
+    "green",
+    "green",
+    "green",
+  ]);
+};
+
+```
 ### 14. Capturing the screen - (10min)
 ### 15. Getting available input/outputs with enumerateDevices() - (9min)
 ### 16. Loading up input/output options - (11min)
