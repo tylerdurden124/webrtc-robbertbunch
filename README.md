@@ -41,6 +41,8 @@
 ## Section 02 - basics -> project teaching getUserMedia 
 ### 6. Project file setup - (3min)
 
+- section outcome 
+
 <img
 src='exercise_files/section02-06-project-playground-index-html.png'
 alt='section02-06-project-playground-index-html.png'
@@ -696,6 +698,21 @@ getDevices();
 
 ## Section 03 - rtcPeerConnection - Stream video, peer-to-peer
 ### 17. Section Demo & Overview - (6min)
+
+<img
+src='exercise_files/section03-17-outcome-demo.png'
+alt='section03-17-outcome-demo.png'
+width=600
+/>
+
+- peer connection (the other part of webRTC)
+  - getUserMedia gets the feed
+  - now we send it to a peer with peerConnection
+- you can open 2 tabs (https and same url)
+- or browser + phone (https and same url (needs to be on same network))
+- we will use signals
+- will need web socket server (socket.io)
+
 ### 18. rtcPeerConnection and signaling - (7min)
 ### 19. Signaling Part 1 - SDP - (3min)
 ### 20. Signaling Part 2 - ICE (and STUN) - (7min)
