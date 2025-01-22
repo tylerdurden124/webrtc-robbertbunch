@@ -246,13 +246,51 @@ getUserMedia({
   }
 })
 ```
+### MediaTrackConstraints
+- dictionary used to describe a set of capabilities and the value of values each can take on.
+- a constraints dictionary is passed into `applyConstraints()`
+- MediaStreamTrack provides `getConstraints()` method returns `MediaTrackConstraints` object
+- ie you can ask a track for the constraints available
+
 - browser will try honor these resolutions
 - `min`, `max` - as close as possible
 - `exact` - if you specify `exact` but no camera exists with this resolution or higher, an `OvercontrainedError` returned.
 - `ideal` - browser will try
 
 ### getSupportedContraints()
-- tells us browser capabilities
+- tells us browser capabilities - returns a boolean list of whether something is supported.
+- `const supportedConstraints = navigator.mediaDevices.getSupportedConstraints()`
+- create `src/gumplayground/changeVideoSize.js`
+```js
+// changeVideoSize.js
+const supportedConstraints = navigator.mediaDevices.getSupportedConstraints();
+console.log("supportedConstraints: ", supportedConstraints);
+
+const changeVideoSize = () => {
+  
+}
+```
+
+### getCapabilities()
+- you can use MediaStreamTrack .getCapabilities()
+- returns a `MediaTrackCapabilities` object specifying the values or range of values of each constrainable property
+- the difference between `supportedConstraints` and `getCapabilities()` is the latter gives actual values of supported properties
+
+- getCapabilities() specific for audio track
+
+<img
+src='exercise_files/section02-10-constraints-overview-getCapabilities-audio.png'
+alt='section02-10-constraints-overview-getCapabilities-audio.png'
+width=600
+/>
+
+- getCapabilities() specific for video track
+
+<img
+src='exercise_files/section02-10-constraints-overview-getCapabilities-video.png'
+alt='section02-10-constraints-overview-getCapabilities-video.png'
+width=600
+/>
 
 ### 11. Changing resolution, framerate, aspect ratio - applyConstraints() - (8min)
 ### 12. Recording a feed - MediaRecorder and webRTC - (13min)
