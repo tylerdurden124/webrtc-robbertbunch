@@ -545,14 +545,90 @@ document.querySelector("#video-input").addEventListener("change", (e) => changeV
 ```js
 //src/gumplayground/inputOutput.js
 
-const audioInputEl = document.querySelector("#audio-input");
-const audioOutputEl = document.querySelector("#audio-output");
-const videoInputEl = document.querySelector("#video-input");
 
 const getDevices = async () => {
   try {
     const devices = await navigator.mediaDevices.enumerateDevices();
     console.log(devices);
+    
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+const changeAudioInput = async (e) => {
+  
+};
+
+const changeAudioOutput = async (e) => {
+  
+};
+
+const changeVideo = async (e) => {
+  
+};
+
+getDevices();
+
+```
+
+
+
+#### FIX - creating a secure context
+- src/gumplayground -> `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser`
+- npm i -g pnpm 
+- pnpm init
+- pnpm i express
+- pnpm add -g nodemon
+
+- create `expressServer.js`
+
+```js
+//gumplayground/expressServer.js
+
+//we need this to run in a localhost context instead of file
+//so that we can run enumerate devices (it must be run in a secure context)
+//and localhost counts
+const path = require('path');
+const express = require('express');
+const app = express();
+app.use(express.static(path.join(__dirname)));
+app.listen(3000)
+```
+
+### testing
+- run with `pnpm run dev` (added script to package.json)
+- click `share my mic and camera`
+- note the updated console.log
+
+### 16. Loading up input/output options - (11min)
+- NOTE: in notes for lesson 15 already included the code for `changeAudioInput()`, `changeAudioOutput()` and `changeVideo()` 
+- up to this point we can get a list of all devices that is accessible because of `enumerateDevices()`
+- TODO: fill out the options for the dropdown inputs `audio input`, `audio output`, `video input`
+- with ability to get a list of `devices`: `const devices = await navigator.mediaDevices.enumerateDevices();`
+- iterate through list:
+  - create an `<option>` element 
+  - appendChild `<option>` for each respective input:
+  - sorting by device.`kind`
+  - using the deviceId -> `option.value = d.deviceId;` 
+  - using the label -> `option.text = d.label;`
+- so for each device (of `kind`), add its `deviceId` to media constraints and pass to getUserMedia
+- for audioOutput change -> `videoEl.setSinkId(sinkId)` (sinkId is deviceId)
+
+```js
+//inputOutput.js
+//...
+
+const audioInputEl = document.querySelector("#audio-input");
+const audioOutputEl = document.querySelector("#audio-output");
+const videoInputEl = document.querySelector("#video-input");
+
+const getDevices = async () => {
+  console.log('getDevices()');
+  try {
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    console.log(devices);
+    
     devices.forEach((d) => {
       const option = document.createElement("option"); //create the option tag
       option.value = d.deviceId;
@@ -566,6 +642,7 @@ const getDevices = async () => {
         videoInputEl.appendChild(option);
       }
     });
+
   } catch (err) {
     console.log(err);
   }
@@ -612,38 +689,8 @@ const changeVideo = async (e) => {
 
 getDevices();
 
-```
+``` 
 
-
-
-#### FIX - creating a secure context
-- src/gumplayground -> `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser`
-- npm i -g pnpm 
-- pnpm init
-- pnpm i express
-- pnpm add -g nodemon
-
-- create `expressServer.js`
-
-```js
-//gumplayground/expressServer.js
-
-//we need this to run in a localhost context instead of file
-//so that we can run enumerate devices (it must be run in a secure context)
-//and localhost counts
-const path = require('path');
-const express = require('express');
-const app = express();
-app.use(express.static(path.join(__dirname)));
-app.listen(3000)
-```
-
-### testing
-- run with `pnpm run dev` (added script to package.json)
-- click `share my mic and camera`
-- note the updated console.log
-
-### 16. Loading up input/output options - (11min)
 
 ---
 
