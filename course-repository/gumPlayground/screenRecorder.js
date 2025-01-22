@@ -21,7 +21,6 @@ const startRecording = ()=>{
     ])
 }
 
-
 const stopRecording = ()=>{
     if(!mediaRecorder){
         alert("Please record before stopping!")

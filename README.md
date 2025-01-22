@@ -476,6 +476,33 @@ const shareScreen = async () => {
 
 ```
 ### 14. Capturing the screen - (10min)
+
+<img
+src='exercise_files/section02-14-capturing-the-screen-sharing-tab.png'
+alt='section02-14-capturing-the-screen-sharing-tab.png'
+width=600
+/>
+
+#### getDisplayMedia()
+- capability to `share the entire screen` not just browser window
+- `navigator.mediaDevices.getDisplayMedia()` (we've been working with `navigator.mediaDevices.getUserMedia`)
+- returns a promise that resolves to MediaStream
+- `.getDisplayMedia()` - prompts the user to select and grant permission to capture the contents of a display or portion thereof (eg. window) as a `MediaStream` (which consists of `MediaStreamTrack`)
+- the resultant stream can then be recorded using the `MediaStream Recording API` or transmitted as part of `WebRTC session`
+- you can pass options to `getDisplayMedia(options)`
+  - `video` - default is true
+  - `audio` - default is false
+  - `selfBrowserSurface` - whether the browser should allow the user to select the current tab for capture. 
+    - helps avoid infinite hall of mirrors effect
+    - possible values: `include` or `exclude`
+- you can record the mediaStream - `mediaStream` declared in `script.js` and set in `shareScreen.js`
+
+```js
+//shareScreen.js
+//...
+mediaStream = await navigator.mediaDevices.getDisplayMedia(options);
+```
+
 ### 15. Getting available input/outputs with enumerateDevices() - (9min)
 ### 16. Loading up input/output options - (11min)
 
