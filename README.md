@@ -237,7 +237,7 @@ document.querySelector('#stop-video').addEventListener('click', e=> stopMyFeed(e
 ### 10. Constraints overview - getSupportedConstraints() and getCapabilities() - (10min)
 - the constraints object passed to getUserMedia()
   - changing the screensize (video feed resolution)
-- getUserMedia() constraints require either or both audio/media
+- getUserMedia() constraints require `either or both` audio/media
 
 ```js
 getUserMedia({
@@ -267,7 +267,10 @@ const supportedConstraints = navigator.mediaDevices.getSupportedConstraints();
 console.log("supportedConstraints: ", supportedConstraints);
 
 const changeVideoSize = () => {
-  
+  stream.getTracks().forEach(track=>{
+    const capabilities = track.getCapabilities()
+    console.log(capabilities);
+  })  
 }
 ```
 
@@ -293,6 +296,41 @@ width=600
 />
 
 ### 11. Changing resolution, framerate, aspect ratio - applyConstraints() - (8min)
+- get getCapabilities() 
+  - height: {max:720}
+  - width: {max:1280}
+- once you know the capabilities of the browser, you can call `applyContraints()` against a track
+- the constraints properties are specific to the particular type of track (audio/video)
+- with applyConstraints() we are not applying it to getUserMedia, it is being applied to a track
+
+- example of using constraints specific for video 
+```js
+const constraints = {
+  width: {min:640, ideal: 1280},
+  height: {min:480, ideal: 720},
+  advanaced: [{width:1920, height:1280}, {aspectRatio: 1.333}]
+}
+```
+
+- setting width/height to input value as long as its less than `MediaCapabilities.width.max` and `MediaCapabilities.height.max`
+```js
+const capabilities = track.getCapabilities();
+console.log('capabilities: ', capabilities);
+
+const height = document.querySelector('#vid-height').value;
+const width = document.querySelector('#vid-width').value;
+
+const vConstraints = {
+  height: {exact: height < capabilities.height.max ? height: capabilities.height.max}, 
+  width: {exact: width < capabilities.width.max ? width: capabilities.width.max}, 
+  // frameRate: 5,
+  // aspectRatio: 10 
+}
+```
+
+### testing
+- ensure `windows` -> `settings` for `microphone privacy` and `camera privacy` is set to `on`
+
 ### 12. Recording a feed - MediaRecorder and webRTC - (13min)
 ### 13. Update buttons - (5min)
 ### 14. Capturing the screen - (10min)
