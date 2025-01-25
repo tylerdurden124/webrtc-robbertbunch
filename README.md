@@ -697,6 +697,8 @@ getDevices();
 ---
 
 ## Section 03 - rtcPeerConnection - Stream video, peer-to-peer
+- TODO: rtcPeerConnection
+
 ### 17. Section Demo & Overview - (6min)
 
 <img
@@ -705,15 +707,39 @@ alt='section03-17-outcome-demo.png'
 width=600
 />
 
-- peer connection (the other part of webRTC)
-  - getUserMedia gets the feed
+- PART 1 -> getUserMedia gets the feed (Section 02) 
+- PART 2  -> the connection (section 03) - RTCPeerConnection (the other part of webRTC)
   - now we send it to a peer with peerConnection
-- you can open 2 tabs (https and same url)
-- or browser + phone (https and same url (needs to be on same network))
+
+### 18. rtcPeerConnection and signaling - (7min)
+
+- rtcConnection is peer-2-peer
+
+<img
+src='exercise_files/section03-18-rtcPeerConnection.png'
+alt='section03-18-rtcPeerConnection.png'
+width=600
+/>
+
+### signaling (via a server)
+- signalling is the innitial part (before browsers connect with each other - this server helps then connect)
+1. find each other -> direct connection of peers without need for intermediary server (need server just to find each other)
+  - is called the ICE candidate (json {})
+2. thy need to exchange info - need to exchange info `before` a connection (eg. codec)
+  - is called SDP (json {})
+- these 2 things colletively called signaling and moves from one browser to another browser 
+- once cross-messaging is done, signaling is complete (signal server)
+
+### the server
+- we will use a web server
+- send the SDP and IP address to server 
+- server then sends this to other client
+- at the same time, the other client does the same by sending SDP and its IP address back to server for other client
+- note: there is no additional request (which is why we will use websockets)
+- you can open 2 tabs (https and same url) or browser + phone (https and same url (needs to be on same network))
 - we will use signals
 - will need web socket server (socket.io)
 
-### 18. rtcPeerConnection and signaling - (7min)
 ### 19. Signaling Part 1 - SDP - (3min)
 ### 20. Signaling Part 2 - ICE (and STUN) - (7min)
 ### 21. File Structure - (7min)
