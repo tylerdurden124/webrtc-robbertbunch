@@ -1036,7 +1036,93 @@ peerConnection.addEventListener('icecandidate', e => {
 - `console.log(e);` -> `RTCIceCandidate` have a `candidate` property
 
 ### 24. Socket.io and HTTPS setup - (9min)
+- the signalling servers job is to facilitate 2 browser find each other
+- TODO: create socket.io server
+- each browser will create their own `session descriptions` (SDP) and `ice candidates` (ip)
+- send it up to the server
+- server will send it to other client, 
+- once this happens in both directions, signalling server is no longer needed
+
+```
+pnpm i socket.io
+```
+
+### mkcert module
+- update server.js to use socket.io and create a https server
+- make https: `npm i -g mkcert` (might need to install globally)
+- mkcert creates self-signed certificates without OpenSSL
+- `mkcert create-ca` -> create a certificate authority
+  - ca.crt
+  - ca.key
+
+- `mkcert create-cert` -> create a certificate
+  - cert.crt
+  - cert.key
+
+- console output:
+
+  ```bash
+  Private Key: cert.key
+  Certificate: cert.crt
+  ```
+- use `fs` module to work with file system and grab cert.key
+  - `const key = fs.readFileSync('cert.key');`
+
+- use `fs` module to work with file system and grab cert.crt
+  - `const cert = fs.readFileSync('cert.crt');`
+- we pass createServer({key, cert}, app);
+
+### https server
+- create https server: `const expressServer = https.createServer({key, cert}, app);`
+
+### testing
+- use https: `https://localhost:8181`
+- error: `your connection is not private` 
+- fix: click on: `process to localhost (unsafe)`
+
+```js
+// server.js
+const fs = require('fs');
+const https = require('https'); //make it https
+const express = require('express');
+const app = express();
+const socketio = require('socket.io');
+app.use(express.static(__dirname));
+
+const key = fs.readFileSync('cert.key');
+const cert = fs.readFileSync('cert.crt');
+
+//changed setup so we can use https
+const expressServer = https.createServer({key, cert}, app); //pass the certificates and key to createServer()
+const io = socketio(expressServer);
+
+expressServer.listen(8181);
+
+```
+- we have a socketio server, 
+- it listens on port 8181 to a secure server with selfmade key+ certificates
+- socket.io will be served up at this location: `/socket.io/socket.io.js`
+
+```html
+<!-- index.html -->
+
+<!-- ... -->
+<script src="/socket.io/socket.io.js"></script>
+```
+
+- this gives us access to `io` object
+- in scripts.js ensure we are connecting to `https`
+```js
+// script.js
+const socket = io.connect('https://localhost:8181/', (socket)=>{
+  console.log('someone has connected');
+});
+```
+- TODO -> script.js emit the `offer`
+
 ### 25. Connection TaskList - (6min)
+
+
 ### 26. Connection TaskList - part 2 - (12min)
 ### 27. emit newOffer - (9min)
 ### 28. Emit iceCandidates - (8min)
