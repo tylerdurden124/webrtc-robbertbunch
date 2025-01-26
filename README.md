@@ -811,7 +811,7 @@ width=600
   - protocol to discover your public address and determine restrictions in your router that would prevent a direct connection with a peer.
 
 ### how it works
-- client sends request to STUN server, stun server replies (with ICE candidates) - to client (sending the client back its own ip) public ip address and whether its accessible
+- client sends request to STUN server, stun server replies to client (with ICE candidates) - (sending the client back its own ip) public ip address and whether it's accessible
 - client sends ICE candidate to socketio server
 - and then socketio server sends ICE to client 2
 - client 2 now has ice candidates (knows how to find other client) AND SDP.
@@ -868,6 +868,138 @@ width=600
 />
 
 ### 22. local RTC - (14min)
+
+<img
+src='exercise_files/section03-22-local-rtc.png'
+alt='section03-22-local-rtc.png'
+width=600
+/>
+
+- this lesson: the signaling process...where client 1 (gets its ip address and SDP)
+- 1. find -> ICE (ip)
+- 2. exchange info -> SDP
+
+### create RTCPeerConnection
+- both computers (client 1 and client 2) will be running script.js 
+- both need its own peer connection (RTCPeerConnection)
+- `scripts.js` - create a RTCPeerConnection via - `createPeerConnection() `
+
+```js
+const createPeerConnection = ()=>{
+  peerConnection = new RTCPeerConnection();
+}
+```
+- a RTCPeerConnection represents a connection between local device and a remote peer
+  - it can take a configuration object
+  - we will send it `iceServers` (array of RTCIceServer objects) each ice agent (typically a STUN/ and/or TURN server)
+  - the ice agent can figure out how to reach the browser (path to the browser) when there are routers / firewalls / proxies etc.
+- it generates and ice candidate (saying how to get to that browser via this path)
+  - so to get the ice candidate, we go through the stun server
+- TODO: copy from course files -> `course-repository\starterFiles\signalingPeerConnection\stunServers.js`
+- this config has stun server urls 
+- urls is either a single string or array of strings specifying a URL which can be used to connect to the server.
+- pass peerConfiguration object to peerConnection:`await createPeerConnection(peerConfiguration);`
+
+### create an offer
+- after connection is set and ice candidate found
+- create an offer (`createOffer()`)
+- the `createOffer()` method initiates the creation of an SDP offer for purpose of starting a new WebRTC connection to a remote peer
+- it generates a SDP
+
+```sdp message
+v=0
+o=alice 2890844526 2890844526 IN IP4 host.anywhere.com
+s=
+c=IN IP4 host.anywhere.com
+t=0 0
+m=audio 49170 RTP/AVP 0
+a=rtpmap:0 PCMU/8000
+m=video 51372 RTP/AVP 31
+a=rtpmap:31 H261/90000
+m=video 53000 RTP/AVP 32
+a=rtpmap:32 MPV/90000
+```
+
+- NOTE: we need to add video `stream` to peerConnection -> `addTrack()`
+- `addTrack()` - adds a new media track to the set of tracks which will be transmitted to the other peer
+- adding a track will trigger a renegotiation
+
+```js
+//scripts.js
+//...
+let peerConfiguration = {
+  iceServers:[
+    {
+      urls:[
+        'stun:stun.l.google.com:19302',
+        'stun:stun1.l.google.com:19302'
+      ]
+    }
+  ]
+}
+
+//...
+
+const createPeerConnection = async ()=>{
+  try{
+    //RTCPeerConnection is the thing that creates the connection
+    //we can pass a config object, and that config object can contain stun servers
+    //which will fetch us ICE candidates
+    peerConnection = new RTCPeerConnection(peerConfiguration);
+
+    //add tracks from localStream 
+    localStream.getTracks().forEach(track=>{
+      peerConnection.addTrack(track, localStream);
+    })
+
+    // Handle ICE candidates
+    peerConnection.addEventListener('icecandidate', e => {
+      console.log('ICE candidate found...');
+      console.log(e);
+    });
+
+    return peerConnection;
+  }
+  catch(err){
+    console.error('Error creating peer connection:', error);
+    throw error; // This will cause the promise to reject
+  }
+}
+
+const call = async e => {
+  //...
+  //peer connection is set with our STUN servers sent over
+  await createPeerConnection();
+
+ //create offer time `createOffer()`
+  try{
+    console.log('creating an offer');
+    const offer = await peerConnection.createOffer();
+    console.log(offer);
+  }catch(err){
+    console.log(err)
+  }
+
+}
+
+```
+- the `icecandidate` event is sent to an RTCPeerConnection when an RTCIceCandidate has been identified and added to 
+local peer by a call to `RTCPeerConnection.setLocalDescription()`
+- ICE (interactive connectivity establishment) is a framework to allow your web browser to connect with peers.
+- ice uses STUN and/or TURN servers to accomplish this
+
+```js
+//script.js
+//...
+
+localStream.getTracks().forEach(track=>{
+  peerConnection.addTrack(track, localStream);
+});
+```
+
+- this associates our stream with peer connection, so that when we create an offer `peerConnection.createOffer()`, it can check the data stream to find out what information the other browser will need to know.
+- NOTE: removed return new Promise() replaced with async function (since the caller has await)
+
 ### 23. setLocalDescription() - (4min)
 ### 24. Socket.io and HTTPS setup - (9min)
 ### 25. Connection TaskList - (6min)
