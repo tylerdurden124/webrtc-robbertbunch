@@ -825,7 +825,11 @@ width=600
     - populate video stream
   - styles.css
   - server.js
-    - express
+    - create express server 
+
+### test
+- `nodemon server.js`
+- localhost:8181
 
 ```js
 //server.js
