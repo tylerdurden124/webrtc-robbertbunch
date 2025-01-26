@@ -16,6 +16,33 @@ let peerConfiguration = {
   ]
 }
 
+const createPeerConnection = async ()=>{
+  try{
+    //RTCPeerConnection is the thing that creates the connection
+    //we can pass a config object, and that config object can contain stun servers
+    //which will fetch us ICE candidates
+    peerConnection = new RTCPeerConnection(peerConfiguration);
+
+    //add tracks from localStream 
+    localStream.getTracks().forEach(track=>{
+      peerConnection.addTrack(track, localStream);
+    })
+
+    // Handle ICE candidates
+    peerConnection.addEventListener('icecandidate', e => {
+      console.log('ICE candidate found...');
+      console.log(e); //ip addresses (ice candidates)
+    });
+
+    return peerConnection;
+  }
+  catch(err){
+    console.error('Error creating peer connection:', error);
+    throw error; // This will cause the promise to reject
+  }
+
+}
+
 //when a client initiates a call
 const call = async e => {
   const stream = await navigator.mediaDevices.getUserMedia({
@@ -32,38 +59,11 @@ const call = async e => {
   try{
     console.log('creating an offer');
     const offer = await peerConnection.createOffer();
-    console.log(offer);
-
+    console.log(offer);   //sdp
+    peerConnection.setLocalDescription(offer);
   }catch(err){
     console.log(err)
   }
-}
-
-const createPeerConnection = async ()=>{
-  try{
-    //RTCPeerConnection is the thing that creates the connection
-    //we can pass a config object, and that config object can contain stun servers
-    //which will fetch us ICE candidates
-    peerConnection = new RTCPeerConnection(peerConfiguration);
-
-    //add tracks from localStream 
-    localStream.getTracks().forEach(track=>{
-      peerConnection.addTrack(track, localStream);
-    })
-
-    // Handle ICE candidates
-    peerConnection.addEventListener('icecandidate', e => {
-      console.log('ICE candidate found...');
-      console.log(e);
-    });
-
-    return peerConnection;
-  }
-  catch(err){
-    console.error('Error creating peer connection:', error);
-    throw error; // This will cause the promise to reject
-  }
-
 }
 
 document.querySelector('#call').addEventListener('click', call)

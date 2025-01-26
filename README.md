@@ -886,14 +886,14 @@ width=600
 
 ```js
 const createPeerConnection = ()=>{
-  peerConnection = new RTCPeerConnection();
+  peerConnection = new RTCPeerConnection(peerConfiguration);
 }
 ```
 - a RTCPeerConnection represents a connection between local device and a remote peer
   - it can take a configuration object
   - we will send it `iceServers` (array of RTCIceServer objects) each ice agent (typically a STUN/ and/or TURN server)
   - the ice agent can figure out how to reach the browser (path to the browser) when there are routers / firewalls / proxies etc.
-- it generates and ice candidate (saying how to get to that browser via this path)
+- it generates and `ice candidate` (saying how to get to that browser via this path)
   - so to get the ice candidate, we go through the stun server
 - TODO: copy from course files -> `course-repository\starterFiles\signalingPeerConnection\stunServers.js`
 - this config has stun server urls 
@@ -903,7 +903,7 @@ const createPeerConnection = ()=>{
 ### create an offer
 - after connection is set and ice candidate found
 - create an offer (`createOffer()`)
-- the `createOffer()` method initiates the creation of an SDP offer for purpose of starting a new WebRTC connection to a remote peer
+- the `createOffer()` method initiates the `creation of an SDP` offer for purpose of starting a new WebRTC connection to a remote peer
 - it generates a SDP
 
 ```sdp message
@@ -976,6 +976,7 @@ const call = async e => {
     console.log('creating an offer');
     const offer = await peerConnection.createOffer();
     console.log(offer);
+    peerConnection.setLocalDescription(offer);
   }catch(err){
     console.log(err)
   }
@@ -991,16 +992,49 @@ local peer by a call to `RTCPeerConnection.setLocalDescription()`
 ```js
 //script.js
 //...
+const createPeerConnection = async ()=>{
+  //...
 
-localStream.getTracks().forEach(track=>{
-  peerConnection.addTrack(track, localStream);
-});
+  peerConnection = new RTCPeerConnection(peerConfiguration);
+
+  localStream.getTracks().forEach(track=>{
+    peerConnection.addTrack(track, localStream);
+  });
+
+  //...
+}
 ```
 
 - this associates our stream with peer connection, so that when we create an offer `peerConnection.createOffer()`, it can check the data stream to find out what information the other browser will need to know.
 - NOTE: removed return new Promise() replaced with async function (since the caller has await)
 
 ### 23. setLocalDescription() - (4min)
+- now we have an `offer` -> send it to other side
+- by calling `createoffer()` it returns a `RTCSessionDescription`
+- offer is an `RTCSessionDescription`
+- returns `RTCSessionDescription` describes one end of the connection (or a potential connection) (so we will need 2)
+- the process of negotiating a connection between 2 peers involves exchanging `RTCSessionDescription` objects (so not only SDP send the entire object)
+
+- 
+### setLocalDescription()
+- setLocalDescription -> tells peerConnection we are this `sdp` and this `type` by receiving the `offer`
+- NOTE: `icecandidate` will trigger once we call `setLocalDescription`:
+
+<img
+src='exercise_files/section03-23-calling-setLocalDescription-triggers-icecandidate-event.png'
+alt='section03-23-calling-setLocalDescription-triggers-icecandidate-event.png'
+width=600
+/>
+
+```js
+// Handle ICE candidates
+peerConnection.addEventListener('icecandidate', e => {
+  console.log('ICE candidate found...');
+  console.log(e);
+});
+```
+- `console.log(e);` -> `RTCIceCandidate` have a `candidate` property
+
 ### 24. Socket.io and HTTPS setup - (9min)
 ### 25. Connection TaskList - (6min)
 ### 26. Connection TaskList - part 2 - (12min)
