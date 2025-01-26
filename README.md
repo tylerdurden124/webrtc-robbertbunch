@@ -723,8 +723,12 @@ width=600
 
 ### signaling (via a server)
 - signalling is the innitial part (before browsers connect with each other - this server helps then connect)
+
+### ICE candidate
 1. find each other -> direct connection of peers without need for intermediary server (need server just to find each other)
   - is called the ICE candidate (json {})
+
+### SDP
 2. thy need to exchange info - need to exchange info `before` a connection (eg. codec)
   - is called SDP (json {})
 - these 2 things colletively called signaling and moves from one browser to another browser 
@@ -741,6 +745,55 @@ width=600
 - will need web socket server (socket.io)
 
 ### 19. Signaling Part 1 - SDP - (3min)
+- SDP - the initial exchange of information
+- SDP (standard description protocol) - the standard for decribing multimedia content of the connection (resolution, formats, codecs, encryption) 
+- so that once both peers are connected they can understand each other (once the data is transferring)
+- essentially the metadata describing the content (not the media content itself)
+- a sdp message (json)
+
+```sdp message
+v=0
+o=alice 2890844526 2890844526 IN IP4 host.anywhere.com
+s=
+c=IN IP4 host.anywhere.com
+t=0 0
+m=audio 49170 RTP/AVP 0
+a=rtpmap:0 PCMU/8000
+m=video 51372 RTP/AVP 31
+a=rtpmap:31 H261/90000
+m=video 53000 RTP/AVP 32
+a=rtpmap:32 MPV/90000
+```
+
+### client 1 (caller) and client2
+
+<img
+src='exercise_files/section03-19-signalling-part1-sdp-flow.png'
+alt='section03-19-signalling-part1-sdp-flow.png'
+width=600
+/>
+
+### Step 1 - the caller initiate connection 
+- client 1 intiates a rtc Peer connection (generates SDP)
+- and `OFFER` socket.io event sends the SDP
+- socket.io will receive it and wait for the other SDP on client 2
+
+### step2 - client 2
+- creates RTCP client
+- sends `READY`
+
+### step3 - socket.io 
+- responds to `READY`
+- socket.io sends SDP (from client 1)
+
+### step4 - client 2
+- client 2 now has client 1's SDP
+- responds with `ANSWER` and includes its own SDP
+
+### step5 - socket.io
+- socketio passes on this `ANSWER` to client 1
+- this completes part 1 of signalling server
+
 ### 20. Signaling Part 2 - ICE (and STUN) - (7min)
 ### 21. File Structure - (7min)
 ### 22. local RTC - (14min)
