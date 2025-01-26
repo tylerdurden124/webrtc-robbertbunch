@@ -795,7 +795,74 @@ width=600
 - this completes part 1 of signalling server
 
 ### 20. Signaling Part 2 - ICE (and STUN) - (7min)
+- second part of finding each other 
+
+<img
+src='exercise_files/section03-19-signalling-part2-ice.png'
+alt='section03-19-signalling-part2-ice.png'
+width=600
+/>
+
+- ICE (interactive connectivity establishment) - ice is a framework to allow web browser to connect with peers.
+  - there are mechanisms in place to make it hard for them to find each other eg. 
+    - firewall, 
+    - NAT (used to give device a public address) and say client wants to reach a device behind a router
+- STUN (Session traversal utilities for NAT) 
+  - protocol to discover your public address and determine restrictions in your router that would prevent a direct connection with a peer.
+
+### how it works
+- client sends request to STUN server, stun server replies (with ICE candidates) - to client (sending the client back its own ip) public ip address and whether its accessible
+- client sends ICE candidate to socketio server
+- and then socketio server sends ICE to client 2
+- client 2 now has ice candidates (knows how to find other client) AND SDP.
+- with this, the 2 clients can connect to each other
+
 ### 21. File Structure - (7min)
+- implementing signalling part 1 (sdp) + part2 (ice)
+- `src/signallingPeerConnection/`
+  - index.html
+  - scripts.js
+    - populate video stream
+  - styles.css
+  - server.js
+    - express
+
+```js
+//server.js
+const express = require('express');
+const app = express();
+app.use(express.static(__dirname));
+app.listen(8181);
+```
+
+```js
+//scripts.js
+const localVideoEl = document.querySelector('#local-video');
+const remoteVideoEl = document.querySelector('#remote-video');
+
+let localStream;  //local video stream
+let remoteStream; //remote video stream
+let peerConnection; //the peer connection that the 2 clients use to talk
+
+//when a client initiates a call
+const call = async (e) => {
+  const stream = await navigator.mediaDevices.getUserMedia({
+    video:true,
+    // audio: true
+  });
+  localVideoEl.srcObject = stream;
+}
+
+document.querySelector('#call').addEventListener('click', call)
+```
+
+- outcome:
+<img
+src='exercise_files/section03-21-file-structure.png'
+alt='section03-21-file-structure.png'
+width=600
+/>
+
 ### 22. local RTC - (14min)
 ### 23. setLocalDescription() - (4min)
 ### 24. Socket.io and HTTPS setup - (9min)
