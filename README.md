@@ -1189,6 +1189,103 @@ Signaling server has been waiting...
 21 & 23 are waiting for ICE. Once ICE is exchanged, tracks will exchange
 
 ### 27. emit newOffer - (9min)
+- tasklist step 8
+- send offer (we just made) to signaling server (socketio server) 
+- scripts.js
+- pass `username` + `password` into socket initial handshake: `io.connect()` 
+
+```js
+//scripts.js
+const userName = "Rob-"+Math.floor(Math.random()* 100000);
+const password = "x";
+document.querySelector('#user-name').innerHTML = userName;
+
+const socket = io.connect('https://localhost:8181/', {
+  auth: {
+    username,
+    password
+  }
+});
+
+//...
+socket.emit('newOffer', offer); //send offer to signallingServer
+```
+
+- server -> listen for `newOffer`
+- server.js
+- you can access io.connect()'s auth `username` and `password` via 
+`handshake`
+- offers will store an array of objects with these properties: 
+  - offererUserName, 
+  - offer, 
+  - offererIceCandidates
+  - answererUserName,
+  - answer
+  - answererIceCandidates
+
+- connectedSockets
+  - stores the socketId and username
+
+- once `newOffer` received: 
+- `socket.broadcast.emit('newOfferAwaiting', offers.slice(-1));` broadcast the latest offer (last one in array) to all except the sender.
+- NOTE: `socket.emit('event', data)` sends to everyone including sender.
+
+```js
+//server.js
+
+//offers will contain objects 
+//{
+  //offererUserName
+  //offer
+  //offererIceCandidates
+
+  //answererUserName
+  //answer
+  //answererIceCandidates
+//}
+
+const offers = [
+];
+
+const connectedSockets = [
+  //{username, socketId}
+];
+
+//...
+io.on('connection', (socket)=>{
+  //console.log('Someone has connected');
+
+  const userName = socket.handshake.auth.userName;
+  const password = socket.handshake.auth.password;
+
+  if(password !== 'x'){
+    socket.disconnect(true);
+    return;
+  }
+
+  connectSockets.push({
+    socketId: socket.id,
+    userName
+  });
+
+  socket.on('newOffer', (newOffer) => {
+    offers.push({
+      offererUserName: userName, 
+      offer: newOffer, 
+      offererIceCandidates:[],
+      answererUserName:null,
+      answer:null,
+      answererIceCandidates:[]
+    });
+
+    //send out to all connected sockets EXCEPT the caller
+    socket.broadcast.emit('newOfferAwaiting', offers.slice(-1));
+  });
+
+});
+```
+- this takes us to TaskList point 8. Client1 emits offer
+
 ### 28. Emit iceCandidates - (8min)
 ### 29. Load existing and new offers on all clients - (9min)
 ### 30. Create answer - (9min)

@@ -20,6 +20,54 @@ const expressServer = https.createServer({key, cert}, app);
 const io = socketio(expressServer);
 
 expressServer.listen(8181);
+
+//offers will contain objects 
+//{
+  //offererUserName
+  //offer
+  //offererIceCandidates
+
+  //answererUserName
+  //answer
+  //answererIceCandidates
+//}
+
+const offers = [
+];
+
+const connectedSockets = [
+  //{username, socketId}
+];
+
+
 io.on('connection', (socket)=>{
   console.log('someone has connected');
+
+  const userName = socket.handshake.auth.userName;
+  const password = socket.handshake.auth.password;
+
+  if(password !== 'x'){
+    socket.disconnect(true);
+    return;
+  }
+
+  connectSockets.push({
+    socketId: socket.id,
+    userName
+  });
+
+  socket.on('newOffer', newOffer=> {
+    offers.push({
+      offererUserName: userName, 
+      offer: newOffer, 
+      offererIceCandidates:[],
+      answererUserName:null,
+      answer:null,
+      answererIceCandidates:[]
+    });
+
+    //send out to all connected sockets EXCEPT the caller
+    socket.broadcast.emit('newOfferAwaiting', offers.slice(-1));
+  });
+
 });

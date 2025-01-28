@@ -1,3 +1,7 @@
+const userName = "Rob-"+Math.floor(Math.random()* 100000);
+const password = "x";
+document.querySelector('#user-name').innerHTML = userName;
+
 const socket = io.connect('https://localhost:8181/');
 
 const localVideoEl = document.querySelector('#local-video');
@@ -63,6 +67,8 @@ const call = async e => {
     const offer = await peerConnection.createOffer();
     console.log(offer);   //sdp
     peerConnection.setLocalDescription(offer);
+
+    socket.emit('newOffer', offer); //send offer to signallingServer
   }catch(err){
     console.log(err)
   }
