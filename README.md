@@ -1287,6 +1287,112 @@ io.on('connection', (socket)=>{
 - this takes us to TaskList point 8. Client1 emits offer
 
 ### 28. Emit iceCandidates - (8min)
+- once ice candidate is found...emit ICE candidate to signaling server 
+- scripts.js
+
+```js
+//scripts.js
+//...
+let didIOffer = false;
+
+
+const createPeerConnection = async ()=>{
+  try{
+    //...
+    
+    peerConnection.addEventListener('icecandidate', e => {
+      console.log('ICE candidate found...');
+      console.log(e); //ip addresses (ice candidates)
+
+      if(e.candidate){
+        socket.emit('sendIceCandidateToSignalingServer', {
+          iceCandidate: e.candidate,
+          iceUserName: userName,
+          didIOffer,
+        });
+      }
+    });
+    return peerConnection;
+
+  }catch(err){
+
+  }
+}
+
+//...
+const call = async e => {
+  //...
+
+  try{
+    const offer = await peerConnection.createOffer();
+    peerConnection.setLocalDescription(offer);
+
+    didIOffer = true;   
+
+    socket.emit('newOffer', offer);
+    //...
+  
+  }catch(e){
+
+  }
+}
+ 
+```
+
+### on server
+- on server, it will add this iceCandidate to:
+  - `offer` IceCandidates -> `offererIceCandidates:[]` or 
+  - `answer` IceCandidates -> `answererIceCandidates:[]`
+- so we use `didIOffer` to keep track of whether we made the offer -> create `didIOffer` and set initially to `false`
+  - after creation of `offer`, set `didIOffer = true`
+- we take the ice candidate and find the offer it belongs to:
+  - if `didIOffer` is true -> add to `offererIceCandidates[]`, 
+  - otherwise -> add to `answererIceCandidates[]`
+- find offer in offers if didIOffer is true
+- `sendIceCandidateToSignalingServer` listener calls each time a new ice candidate comes in
+
+```js
+//server.js
+io.on('connection', (socket)=>{
+  //...
+  socket.on('sendIceCandidateToSignalingServer', iceCandidateObject => {
+    const {didIOffer, iceUserName, iceCandidate} = iceCandidateObject;
+    console.log(`iceCandidate: `, iceCandidate);
+    if(didIOffer){
+      const offerInOffers = offers.find(offer=> offer.offererUserName === iceUserName)
+      if(offerInOffers){
+        offerInOffers.offerIceCandidates.push(iceCandidate)
+        //come back to this...
+        //if the answerer is already here (connected), emit the iceCandidate to that user
+      }
+    }
+
+    console.log(offers);
+  });
+});
+
+```
+- signaling server has now managed to get: 
+  - ice candidates (ip address to get to browser)
+  - sdp
+- is now waiting for other browser to show up
+- in tasklist we are finished with point no. 9:
+```
+~9. Once 7 happens, emit ICE candidates up to signaling server
+    - socket.io server holds it for the other browser
+    - associate with CLIENT1
+CLIENT1 and Signaling server wait.
+    - wait for an answerer/CLIENT2/receiver
+```
+- everything that happens in [Connection TaskList - (6min)](#25-connection-tasklist---6min) 
+- from point 10. onwards, we have already done, will be done in reverse for `answer` instead of `offer`
+
+<img
+src='exercise_files/section03-28-emit-iceCandidates.png'
+alt='section03-28-emit-iceCandidates.png'
+width=600
+/>
+
 ### 29. Load existing and new offers on all clients - (9min)
 ### 30. Create answer - (9min)
 ### 31. Error handling the signaling process - (8min)

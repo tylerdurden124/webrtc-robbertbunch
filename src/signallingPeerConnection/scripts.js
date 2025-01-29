@@ -10,6 +10,7 @@ const remoteVideoEl = document.querySelector('#remote-video');
 let localStream;  //local video stream
 let remoteStream; //remote video stream
 let peerConnection; //the peer connection that the 2 clients use to talk
+let didIOffer = false;
 
 let peerConfiguration = {
   iceServers:[
@@ -38,6 +39,14 @@ const createPeerConnection = async ()=>{
     peerConnection.addEventListener('icecandidate', e => {
       console.log('ICE candidate found...');
       console.log(e); //ip addresses (ice candidates)
+
+      if(e.candidate){
+        socket.emit('sendIceCandidateToSignalingServer', {
+          iceCandidate: e.candidate,
+          iceUserName: userName,
+          didIOffer,
+        });
+      }
     });
 
     return peerConnection;
@@ -68,7 +77,10 @@ const call = async e => {
     console.log(offer);   //sdp
     peerConnection.setLocalDescription(offer);
 
+    didIOffer = true; 
+
     socket.emit('newOffer', offer); //send offer to signallingServer
+
   }catch(err){
     console.log(err)
   }
