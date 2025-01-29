@@ -1394,6 +1394,109 @@ width=600
 />
 
 ### 29. Load existing and new offers on all clients - (9min)
+- [Connection TaskList - (6min)](#25-connection-tasklist---6min) 
+- TODO: tasklist no. 10
+```
+10. CLIENT2 loads up the webpage with io.connect()
+  - a new client is connected to signaling/socket.io server
+```
+
+### script.js
+- someone has joined `io.connect()` is called (on a new browser) 
+  ```js
+  // scripts.js
+  //...
+  const socket = io.connect('https://localhost:8181/', {
+    auth: {
+      username,
+      password
+    }
+  });
+  ```
+
+- in scripts.js -> signal server sees someone has joined
+
+### server
+- in server.js -> io.on('connection', (socket)=>{}) and we listen for `newOffer` event
+- we emit to new person all offers we have
+
+```js
+//server.js
+//...
+//a new client has joined. If there are any offers available, emit them out
+  if(offers.length){
+    socket.emit('availableOffers', offers);
+  }
+```
+
+### script.js -> socketListeners.js
+- refactor
+- TODO: move socket listeners to its own file `/signallingPeerConnection/socketListeners.js`
+- create /`socketListeners.js` and import in index.html `<script src="socketListeners.js"></script>`
+- note: in script.js -> we created a global `socket` reference -> `const socket = ioconnect('https://lo.calhost:8181/');`
+- in socketListeners we can add listeners to that `socket` reference
+
+```js
+//socketListeners.js
+socket.on('availableOffers', offers => {
+  console.log(offers);
+});
+```
+
+### testing
+- note: windows -> camera privacy -> camera -> on
+
+- https://localhost:8181/ (has to be https)
+- open a second window (private mode) -> https://localhost:8181/
+
+- window 1 -> call
+
+<img
+src='exercise_files/section03-29-load-existing-and-new-offers-on-all-clients-caller.png'
+alt='section03-29-load-existing-and-new-offers-on-all-clients-caller.png'
+width=600
+/>
+
+- window 2 -> receive offer
+- the answerer
+
+<img
+src='exercise_files/section03-29-load-existing-and-new-offers-on-all-clients-answerer.png'
+alt='section03-29-load-existing-and-new-offers-on-all-clients-answerer.png'
+width=600
+/>
+
+- on connection get all available offers and - call createOfferEls
+- or someone just made a new offer and we're already here - call createOfferEls
+- `createOfferEls()` -> creates an answer button (answer the caller (offerer))
+
+```js
+//scripts.js
+function createOfferEls(offers){
+  //make green answer button for this new offer
+  const answerEl = document.querySelector('#answer');
+  
+  offers.forEach(o=>{
+    console.log(o);
+    const newOfferEl = document.createElement('div');
+    newOfferEl.innerHTML = `<button class="btn btn-success col-1">Answer ${o.offererUserName}</button>`
+    newOfferEl.addEventListener('click',()=>answerOffer(o))
+    answerEl.appendChild(newOfferEl);
+  });
+}
+
+```
+
+TASKLIST:
+
+- [Connection TaskList - (6min)](#25-connection-tasklist---6min) 
+- COMPLETED: tasklist no. 11
+```
+11. socket.io emit out the RTCSessionDesc to the new client
+    - an offer to be sent!
+```
+- TODO: 12...
+
 ### 30. Create answer - (9min)
 ### 31. Error handling the signaling process - (8min)
 ### 32. Emitting answer - (7min)

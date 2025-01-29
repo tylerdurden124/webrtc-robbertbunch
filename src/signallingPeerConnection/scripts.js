@@ -28,6 +28,38 @@ let peerConfiguration = {
   ]
 }
 
+//when a client initiates a call
+const call = async e => {
+  const stream = await navigator.mediaDevices.getUserMedia({
+    video:true,
+    // audio: true
+  });
+  localVideoEl.srcObject = stream;
+  localStream = stream;
+
+  //peer connection is set with our STUN servers sent over
+  await createPeerConnection();
+
+  //create offer time `createOffer()`
+  try{
+    console.log('creating an offer');
+    const offer = await peerConnection.createOffer();
+    console.log(offer);   //sdp
+    peerConnection.setLocalDescription(offer);
+
+    didIOffer = true; 
+
+    socket.emit('newOffer', offer); //send offer to signallingServer
+
+  }catch(err){
+    console.log(err)
+  }
+}
+
+const answerOffer = (offerObj) => {
+  console.log(`offerObj: `, offerObj);
+}
+
 const createPeerConnection = async ()=>{
   try{
     //RTCPeerConnection is the thing that creates the connection
@@ -59,35 +91,6 @@ const createPeerConnection = async ()=>{
   catch(err){
     console.error('Error creating peer connection:', error);
     throw error; // This will cause the promise to reject
-  }
-
-}
-
-//when a client initiates a call
-const call = async e => {
-  const stream = await navigator.mediaDevices.getUserMedia({
-    video:true,
-    // audio: true
-  });
-  localVideoEl.srcObject = stream;
-  localStream = stream;
-
-  //peer connection is set with our STUN servers sent over
-  await createPeerConnection();
-
-  //create offer time `createOffer()`
-  try{
-    console.log('creating an offer');
-    const offer = await peerConnection.createOffer();
-    console.log(offer);   //sdp
-    peerConnection.setLocalDescription(offer);
-
-    didIOffer = true; 
-
-    socket.emit('newOffer', offer); //send offer to signallingServer
-
-  }catch(err){
-    console.log(err)
   }
 }
 
