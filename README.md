@@ -1361,7 +1361,7 @@ io.on('connection', (socket)=>{
     if(didIOffer){
       const offerInOffers = offers.find(offer=> offer.offererUserName === iceUserName)
       if(offerInOffers){
-        offerInOffers.offerIceCandidates.push(iceCandidate)
+        offerInOffers.offererIceCandidates.push(iceCandidate)
         //come back to this...
         //if the answerer is already here (connected), emit the iceCandidate to that user
       }

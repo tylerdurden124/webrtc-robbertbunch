@@ -2,7 +2,12 @@ const userName = "Rob-"+Math.floor(Math.random()* 100000);
 const password = "x";
 document.querySelector('#user-name').innerHTML = userName;
 
-const socket = io.connect('https://localhost:8181/');
+const socket = io.connect('https://localhost:8181/', {
+  auth: {
+    userName,
+    password
+  }
+});
 
 const localVideoEl = document.querySelector('#local-video');
 const remoteVideoEl = document.querySelector('#remote-video');
