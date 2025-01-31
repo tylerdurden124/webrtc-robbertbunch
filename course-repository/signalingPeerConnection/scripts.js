@@ -57,24 +57,24 @@ const answerOffer = async(offerObj)=>{
     console.log(answer)
     // console.log(peerConnection.signalingState) //should be have-local-pranswer because CLIENT2 has set its local desc to it's answer (but it won't be)
     //add the answer to the offerObj so the server knows which offer this is related to
-    offerObj.answer = answer 
-    //emit the answer to the signaling server, so it can emit to CLIENT1
-    //expect a response from the server with the already existing ICE candidates
-    const offerIceCandidates = await socket.emitWithAck('newAnswer',offerObj)
-    offerIceCandidates.forEach(c=>{
-        peerConnection.addIceCandidate(c);
-        console.log("======Added Ice Candidate======")
-    })
-    console.log(offerIceCandidates)
+//     offerObj.answer = answer
+//     //emit the answer to the signaling server, so it can emit to CLIENT1
+//     //expect a response from the server with the already existing ICE candidates
+//     const offerIceCandidates = await socket.emitWithAck('newAnswer',offerObj)
+//     offerIceCandidates.forEach(c=>{
+//         peerConnection.addIceCandidate(c);
+//         console.log("======Added Ice Candidate======")
+//     })
+//     console.log(offerIceCandidates)
 }
 
-const addAnswer = async(offerObj)=>{
-    //addAnswer is called in socketListeners when an answerResponse is emitted.
-    //at this point, the offer and answer have been exchanged!
-    //now CLIENT1 needs to set the remote
-    await peerConnection.setRemoteDescription(offerObj.answer)
-    // console.log(peerConnection.signalingState)
-}
+// const addAnswer = async(offerObj)=>{
+//     //addAnswer is called in socketListeners when an answerResponse is emitted.
+//     //at this point, the offer and answer have been exchanged!
+//     //now CLIENT1 needs to set the remote
+//     await peerConnection.setRemoteDescription(offerObj.answer)
+//     // console.log(peerConnection.signalingState)
+// }
 
 const fetchUserMedia = ()=>{
     return new Promise(async(resolve, reject)=>{
@@ -99,8 +99,8 @@ const createPeerConnection = (offerObj)=>{
         //we can pass a config object, and that config object can contain stun servers
         //which will fetch us ICE candidates
         peerConnection = await new RTCPeerConnection(peerConfiguration)
-        remoteStream = new MediaStream()
-        remoteVideoEl.srcObject = remoteStream;
+        // remoteStream = new MediaStream()
+        // remoteVideoEl.srcObject = remoteStream;
 
 
         localStream.getTracks().forEach(track=>{
@@ -108,10 +108,10 @@ const createPeerConnection = (offerObj)=>{
             peerConnection.addTrack(track,localStream);
         })
 
-        peerConnection.addEventListener("signalingstatechange", (event) => {
-            console.log(event);
-            console.log(peerConnection.signalingState)
-        });
+        // peerConnection.addEventListener("signalingstatechange", (event) => {
+        //     console.log(event);
+        //     console.log(peerConnection.signalingState)
+        // });
 
         peerConnection.addEventListener('icecandidate',e=>{
             console.log('........Ice candidate found!......')
@@ -125,14 +125,14 @@ const createPeerConnection = (offerObj)=>{
             }
         })
         
-        peerConnection.addEventListener('track',e=>{
-            console.log("Got a track from the other peer!! How excting")
-            console.log(e)
-            e.streams[0].getTracks().forEach(track=>{
-                remoteStream.addTrack(track,remoteStream);
-                console.log("Here's an exciting moment... fingers cross")
-            })
-        })
+        // peerConnection.addEventListener('track',e=>{
+        //     console.log("Got a track from the other peer!! How excting")
+        //     console.log(e)
+        //     e.streams[0].getTracks().forEach(track=>{
+        //         remoteStream.addTrack(track,remoteStream);
+        //         console.log("Here's an exciting moment... fingers cross")
+        //     })
+        // })
 
         if(offerObj){
             //this won't be set when called from call();
@@ -145,10 +145,10 @@ const createPeerConnection = (offerObj)=>{
     })
 }
 
-const addNewIceCandidate = iceCandidate=>{
-    peerConnection.addIceCandidate(iceCandidate)
-    console.log("======Added Ice Candidate======")
-}
+// const addNewIceCandidate = iceCandidate=>{
+//     peerConnection.addIceCandidate(iceCandidate)
+//     console.log("======Added Ice Candidate======")
+// }
 
 
-document.querySelector('#call').addEventListener('click',call)
+document.querySelector('#call').addEventListener('click', call)

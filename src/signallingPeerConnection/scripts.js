@@ -69,6 +69,8 @@ const answerOffer = async (offerObj) => {
 
   console.log(offerObj);
   console.log(answer);  //returns type 'answer' (RTCSessionDescription)
+  console.log(peerConnection.signalingState); //should be have-local-pranswer because CLIENT2 has set its local desc to it's answer (but it won't be)
+
 }
 
 const fetchUserMedia = () => {
@@ -102,6 +104,11 @@ const createPeerConnection = (offerObj) => {
       peerConnection.addTrack(track, localStream);
     })
 
+    addEventListener('signalingstatechange', (event)=> {
+      console.log(event);
+      console.log(peerConnection.signalingState);
+    });
+
     // 18. Handle ICE candidates
     peerConnection.addEventListener('icecandidate', e => {
       console.log('ICE candidate found...');
@@ -120,8 +127,11 @@ const createPeerConnection = (offerObj) => {
     if(offerObj){
       //this wont be set when createPeerConnection() called from 'call()',
       //it will be set when createPeerConnection(offerObj) called from `answerOffer()`
-      peerConnection.setRemoteDescription(offerObj.offer);
+      console.log(peerConnection.signalingState); //should be stable because no setDesc has been run yet
+      await peerConnection.setRemoteDescription(offerObj.offer);
+      console.log(peerConnection.signalingState); //should be have-remote-offer, because client2 has setRemoteDesc on the offer    
     }
+    
     resolve();
  
   })

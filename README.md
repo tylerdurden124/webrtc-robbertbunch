@@ -1638,6 +1638,71 @@ if(offerObj){
 - TODO: Next lesson... `19. CLIENT2 emits answer (RTCSessionDesc - sdp/type) up to signaling server` 
 
 ### 31. Error handling the signaling process - (8min)
+- this lessons discusses events around RTCPeerConnection
+- properties that are helpful:
+  - `connectionState`
+  - `iceConnectionState`
+  - `iceGatheringState`
+  
+  ### 'signalingState' (READONLY) 
+  - returns string value describing the state of signaling process on `local end` of connection while connecting to another peer
+  - possible values: 
+    - `stable` 
+      -> means no ongoing exchange of offer and answer underway (RTCPeerConnection object is `new`)
+        - localDescription - null
+        - remoteDescription - null
+      -> can also mean negotiation is `complete` and connection has been established
+
+    - `have-local-offer` - CLIENT1
+      -> local peer called `setLocalDescription()` passing in SDP representing an offer (its own offer) (by calling `RTCPeerConnection.createOffer()`)
+
+    - `have-remote-offer` - CLIENT2
+      -> same things happening as in `have-local-offer` except its in CLIENT2 
+
+    - `have-local-pranswer` - CLIENT2
+      -> `offer` sent by remote peer has been applied and an answer has been created (by calling `RTCPeerConnection.createAnswer()`)
+      -> difference between this and 'stable' is that if you have the `answer` AND `offer`, and applied both (CLIENT2) but dont have a connection yet because ICE hasnt finished
+
+    - `have-remote-pranswer` - CLIENT1
+      -> same things happening as `have-local-pranswer` but for CLIENT1
+      -> have everything but not connected yet...
+
+    #### TESTING
+    ```js
+    //scripts.js
+
+    const answerOffer = async (offerObj) => {
+      //...
+      console.log(peerConnection.signalingState); //should be have-local-pranswer because CLIENT2 has set its local desc to it's answer (but it won't be (NOT WORKING CHROME))
+
+    }
+
+    const createPeerConnection = ()=>{
+      //...
+
+      if(offerObj){
+        console.log(peerConnection.signalingState); //should be 'stable' because no setDesc has been run yet
+        await peerConnection.setRemoteDescription(offerObj.offer);
+        console.log(peerConnection.signalingState); //should be 'have-remote-offer', because client2 has setRemoteDesc on the offer      
+      }
+    }
+    ```
+
+  ### 'signalingstatechange' 
+  - notify that its signaling state 'signalingState' has changed
+  - does same as above 'console.logs' 
+  - TODO: remove `console.logs` for peerConnection.signalingState
+  - add this before `icecandidate` listener
+
+  ```js
+  //scripts.js
+  //...
+  peerConnection.addEventListener('signalingstatechange', (event)=> {
+    console.log(event);
+    console.log(peerConnection.signalingState);
+  });
+  ```
+
 ### 32. Emitting answer - (7min)
 ### 33. Listening for answer and setRemoteDescription(answer) - (6min)
 ### 34. Apply ICE candidates - Part 1 - (8min)
