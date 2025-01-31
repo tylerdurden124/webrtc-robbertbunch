@@ -30,14 +30,10 @@ let peerConfiguration = {
 
 //when a client initiates a call
 const call = async e => {
-  const stream = await navigator.mediaDevices.getUserMedia({
-    video:true,
-    // audio: true
-  });
-  localVideoEl.srcObject = stream;
-  localStream = stream;
+  //12.
+  await fetchUserMedia();
 
-  //peer connection is set with our STUN servers sent over
+  //13. peer connection is set with our STUN servers sent over
   await createPeerConnection();
 
   //create offer time `createOffer()`
@@ -56,23 +52,57 @@ const call = async e => {
   }
 }
 
-const answerOffer = (offerObj) => {
-  console.log(`offerObj: `, offerObj);
+const answerOffer = async (offerObj) => {
+  //12.
+  await fetchUserMedia();
+  //peer connection is set with our STUN servers sent over
+
+  //13 + 14
+  //pass `offerObj` to createPeerConnection(offerObj)
+  await createPeerConnection(offerObj);
+
+  //15.
+  const answer = await peerConnection.createAnswer({});
+
+  //16.
+  await peerConnection.setLocalDescription(answer); //this is CLIENT2, and CLIENT2 uses the answer as the localDescription
+
+  console.log(offerObj);
+  console.log(answer);  //returns type 'answer' (RTCSessionDescription)
 }
 
-const createPeerConnection = async ()=>{
-  try{
+const fetchUserMedia = () => {
+  return new Promise(async (resolve, reject) => {
+    try{
+      
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video:true,
+        // audio: true
+      });
+      localVideoEl.srcObject = stream;
+      localStream = stream;
+      resolve();
+    }
+    catch(err){
+      console.log(err);
+      reject();
+    }
+  });
+}
+
+const createPeerConnection = (offerObj) => {
+  return new Promise(async (resolve, reject) => {
     //RTCPeerConnection is the thing that creates the connection
     //we can pass a config object, and that config object can contain stun servers
     //which will fetch us ICE candidates
     peerConnection = new RTCPeerConnection(peerConfiguration);
 
-    //add tracks from localStream 
+    //14. add tracks from localStream 
     localStream.getTracks().forEach(track=>{
       peerConnection.addTrack(track, localStream);
     })
 
-    // Handle ICE candidates
+    // 18. Handle ICE candidates
     peerConnection.addEventListener('icecandidate', e => {
       console.log('ICE candidate found...');
       console.log(e); //ip addresses (ice candidates)
@@ -86,12 +116,16 @@ const createPeerConnection = async ()=>{
       }
     });
 
-    return peerConnection;
-  }
-  catch(err){
-    console.error('Error creating peer connection:', error);
-    throw error; // This will cause the promise to reject
-  }
+    //17.
+    if(offerObj){
+      //this wont be set when createPeerConnection() called from 'call()',
+      //it will be set when createPeerConnection(offerObj) called from `answerOffer()`
+      peerConnection.setRemoteDescription(offerObj.offer);
+    }
+    resolve();
+ 
+  })
+
 }
 
-document.querySelector('#call').addEventListener('click', call)
+document.querySelector('#call').addEventListener('click', call);

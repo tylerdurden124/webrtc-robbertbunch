@@ -1431,7 +1431,7 @@ width=600
 
 ### script.js -> socketListeners.js
 - refactor
-- TODO: move socket listeners to its own file `/signallingPeerConnection/socketListeners.js`
+- TODO: moving socket listeners to its own file `/signallingPeerConnection/socketListeners.js`
 - create /`socketListeners.js` and import in index.html `<script src="socketListeners.js"></script>`
 - note: in script.js -> we created a global `socket` reference -> `const socket = ioconnect('https://lo.calhost:8181/');`
 - in socketListeners we can add listeners to that `socket` reference
@@ -1498,6 +1498,145 @@ TASKLIST:
 - TODO: 12...
 
 ### 30. Create answer - (9min)
+- starting tasklist point no. 12...
+
+
+- `12. CLIENT2 runs getUserMedia()`
+  - in call() call fetchUserMedia() -> which runs getUserMedia()
+  - in answerOffer() call fetchUserMedia() -> which runs getUserMedia()
+
+- `13. CLIENT2 creates a peerConnection()`
+  - create RTCPeerConnection -> pass STUN servers 
+  - peerConnection add tracks
+  - adds listener for ICE candidates
+
+- `14. CLIENT2 adds localstream tracks to peerconnection`
+
+- scripts.js
+  - cut from call() and create a new function `fetchUserMedia()`
+```js
+
+const call = async e => {
+  //12.
+  await fetchUserMedia();
+  //13. peer connection is set with our STUN servers sent over
+  await createPeerConnection();
+  //...
+}
+
+const answerOffer = async (offerObj) => {
+  //12.
+  await fetchUserMedia();
+  //peer connection is set with our STUN servers sent over
+  //13.
+  await createPeerConnection(offerObj);
+}
+
+const fetchUserMedia = () => {
+  return new Promise(async (resolve, reject) => {
+    try{
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video:true,
+        // audio: true
+      });
+      localVideoEl.srcObject = stream;
+      localStream = stream;
+      resolve();
+    }
+    catch(err){
+      console.log(err);
+      reject();
+    }
+  });
+}
+
+const createPeerConnection = async (offerObj)=>{
+  try{
+    //RTCPeerConnection is the thing that creates the connection
+    //we can pass a config object, and that config object can contain stun servers
+    //which will fetch us ICE candidates
+    peerConnection = new RTCPeerConnection(peerConfiguration);
+    //...
+    //add tracks from localStream 
+    //Handle ICE candidates
+
+    //...
+    if(offerObj){
+      //this wont be set when createPeerConnection() called from 'call()',
+      //it will be true when createPeerConnection(true) called from `answerOffer()`
+      peerConnection.setRemoteDescription()
+    }
+  }catch(){
+    //...
+  }
+}
+```
+
+- `15. CLIENT2 creates an 'answer' ('createAnswer()');`
+  - NOTE: `TO AN OFFER RECEIVED`...ie we cannot set an answer until we have
+  - REQUIRED: first set `remote response`..
+
+  - createAnswer() creates an `SDP answer` `to an offer received`
+  - answer contains information about: 
+    - any media already attached to the session, 
+    - codecs, 
+    - and options supported by browser, 
+    - and any candidates already gathered.
+  - the answer is delivered to the returned Promise, and should then be sent to the source of the offer to continue negotiation process.
+
+```js
+//scripts.js
+//...
+const answer = await peerConnection.createAnswer();
+console.log(`offerObj: ${offerObj}`);
+console.log(`answer: ${answer}`)
+```
+
+### troubleshoot
+- Error -> `cannot create an answer in a state other than have-remote-offer or have-local-pranswer`
+
+<img
+src='exercise_files/section03-30-troubleshoot-createAnswer.png'
+alt='section03-30-troubleshoot-createAnswer.png'
+width=600
+/>
+
+- FIX -> it thinks it does not have the remote offer -> ie. cannot set an `answer` until `setting remote response`
+- so pass `offerObj` in `createPeerConnection(offerObj)`
+- offer object structure:
+```
+{
+  offererUserName: userName, 
+  offer: newOffer, 
+  offererIceCandidates:[],
+  answererUserName:null,
+  answer:null,
+  answererIceCandidates:[]
+}
+```
+- then set `peerConnection.setRemoteDescription(offerObj.offer);`
+
+```js
+//script.js
+//...
+
+//17.
+if(offerObj){
+  //this wont be set when createPeerConnection() called from 'call()',
+  //it will be set when createPeerConnection(offerObj) called from `answerOffer()`
+  peerConnection.setRemoteDescription(offerObj.offer);
+}
+```
+
+- `17. NOTE: this happens first... (contrary to lessons)` 
+  - Because CLIENT2 has the offer, CLIENT2 can hand the offer to (peerConnection) pc.'setRemoteDescription'`
+- `16. CLIENT2 hands 'answer' to (peerConnection) pc.'setLocalDescription'`
+
+- `~18. when setLocalDescription, start collecting ICE candidates (ASYNC)`
+  - Signaling server has been waiting...
+
+- TODO: Next lesson... `19. CLIENT2 emits answer (RTCSessionDesc - sdp/type) up to signaling server` 
+
 ### 31. Error handling the signaling process - (8min)
 ### 32. Emitting answer - (7min)
 ### 33. Listening for answer and setRemoteDescription(answer) - (6min)
