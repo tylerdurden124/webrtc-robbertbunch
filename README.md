@@ -1704,7 +1704,57 @@ if(offerObj){
   ```
 
 ### 32. Emitting answer - (7min)
+TODO:
+
+- `19. CLIENT2 emits answer (RTCSessionDesc - sdp/type) up to signaling server`
+  -emit entire offerObj (includes offer,answer... etc)
+```js
+//scripts.js
+
+//...
+//19.
+  //add answer to offerObj so the server knows which offer this is related to
+  offerObj.answer = answer;
+  //emit the answer to the signaling server, so it can emit to CLIENT1
+  socket.emit('newAnswer', offerObj);
+```
+
+```js
+//server.js
+
+socket.on('newAnswer', offerObj => {
+  console.log(offerObj);
+  //emit this answer (offerObj)
+  //NOTE: the answer is what the other side needs...
+
+  //find the socket by userName -> to get socketId
+  const socketToAnswer = connectedSockets.find(s => s.userName === offerObj.offererUserName);
+
+  if(!socketToAnswer){
+    return;
+  }
+
+  //we found the matching socket, get socketId -> so we can emit to it!
+  const socketIdToAnswer = socketToAnswer.socketId;
+});
+
+```
+- now when we log OfferObj, it includes the answer
+
+- `~20. CLIENT2 will listen for tracks/ICE from remote`
+    - and is done. 
+    - waiting on ICE candidates
+    - waiting on tracks
+- `21. signaling server listens for answer, emits CLIENT1 answer (RTCSessionDesc - sdp/type)`
+- `22. CLIENT1 takes the answer and hands it to (peerConnection) pc.'setRemoteDesc'`
+- `~23. CLIENT1 waits for ICE candidates and tracks`
+
+21 & 23 are waiting for ICE. Once ICE is exchanged, tracks will exchange
+
 ### 33. Listening for answer and setRemoteDescription(answer) - (6min)
+- we found socketId, now we need to find offerToUpdate
+- 
+
 ### 34. Apply ICE candidates - Part 1 - (8min)
 ### 35. Apply ICE candidates - Part 2 - (5min)
 ### 36. Add tracks from remote peer - MAGIC!! - (6min)

@@ -70,6 +70,13 @@ const answerOffer = async (offerObj) => {
   console.log(offerObj);
   console.log(answer);  //returns type 'answer' (RTCSessionDescription)
   console.log(peerConnection.signalingState); //should be have-local-pranswer because CLIENT2 has set its local desc to it's answer (but it won't be)
+  
+  //19.
+  //add answer to offerObj so the server knows which offer this is related to
+  offerObj.answer = answer;
+  //emit the answer to the signaling server, so it can emit to CLIENT1
+  socket.emit('newAnswer', offerObj);
+  
 
 }
 
