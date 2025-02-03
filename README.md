@@ -1752,8 +1752,67 @@ socket.on('newAnswer', offerObj => {
 21 & 23 are waiting for ICE. Once ICE is exchanged, tracks will exchange
 
 ### 33. Listening for answer and setRemoteDescription(answer) - (6min)
-- we found socketId, now we need to find offerToUpdate
-- 
+- we previously found the `socketId`, 
+- now we need to find `offerToUpdate` so we can emit it
+- add the updated prop values of `offerToUpdate`
+
+```js
+//server.js
+socket.on('newAnswer', offerObj=> {
+  //...
+  //we found the matching socket, get socketId -> so we can emit to it!
+  const socketIdToAnswer = socketToAnswer.socketId;
+
+  //we find the offer to update (from server 'offers') so we can emit it
+  const offerToUpdate = offers.find(o => o.offererUserName === offerObj.offerUserName);
+  if(!offerToUpdate){
+    console.log('no offerToUpdate');
+    return;
+  }
+
+  //fill missing properties with updated values
+  offerToUpdate.answer = offerObj.answer;
+  offerToUpdate.answerUserName = userName;
+  
+  //socket has a .to() which allows emiting to a "room"
+  //every socket has its own room (emit to self (private room))
+  socket.to(socketIdToAnswer).emit('answerResponse', offerToUpdate);
+
+});
+```
+
+- socketListeners listens for `answerResponse`
+- it should abe an updated `offer` object except the ice candidates
+
+```js
+//socketListeners.js
+socket.on('answerResponse',offerObj=>{
+  console.log(offerObj);
+  addAnswer(offerObj);  //scripts.js
+});
+
+```
+- socketListeners.js -> results from listening to `answerResponse`
+
+<img
+src='exercise_files/section03-33-listen-for-remote-response.png'
+alt='section03-33-listen-for-remote-response.png'
+width=600
+/>
+
+- `addAnswer` is called in socketListeners when an answerResponse is emitted.
+- at this point, the offer and answer have been exchanged!
+- now CLIENT1 needs to set the remoteDescription
+```js
+//scripts.js
+const addAnswer = async(offerObj)=>{
+  //addAnswer is called in socketListeners when an answerResponse is emitted.
+  //at this point, the offer and answer have been exchanged!
+  //now CLIENT1 needs to set the remote
+  await peerConnection.setRemoteDescription(offerObj.answer);
+  console.log(peerConnection.signalingState);
+}
+```
 
 ### 34. Apply ICE candidates - Part 1 - (8min)
 ### 35. Apply ICE candidates - Part 2 - (5min)

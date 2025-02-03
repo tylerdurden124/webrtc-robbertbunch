@@ -85,11 +85,28 @@ io.on('connection', (socket)=>{
     const socketToAnswer = connectedSockets.find(s => s.userName === offerObj.offererUserName);
 
     if(!socketToAnswer){
+      console.log('no matching socket');
       return;
     }
 
     //we found the matching socket, get socketId -> so we can emit to it!
     const socketIdToAnswer = socketToAnswer.socketId;
+
+    //we find the offer to update (from server 'offers') so we can emit it
+    const offerToUpdate = offers.find(o => o.offererUserName === offerObj.offerUserName);
+    if(!offerToUpdate){
+      console.log('no offerToUpdate');
+      return;
+    }
+
+    //update property values
+    offerToUpdate.answer = offerObj.answer;
+    offerToUpdate.answerUserName = userName;
+    
+    //socket has a .to() which allows emiting to a "room"
+    //every socket has its own room 
+    socket.to(socketIdToAnswer).emit('answerResponse', offerToUpdate);
+
   });
 
   socket.on('sendIceCandidateToSignalingServer', iceCandidateObject => {
