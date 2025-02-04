@@ -76,7 +76,7 @@ io.on('connection', (socket)=>{
     socket.broadcast.emit('newOfferAwaiting', offers.slice(-1));
   });
 
-  socket.on('newAnswer', offerObj=> {
+  socket.on('newAnswer', (offerObj, ackFunction) => {
     console.log(offerObj);
     //emit this answer (offerObj)
     //NOTE: the answer is what the other side needs...
@@ -99,6 +99,9 @@ io.on('connection', (socket)=>{
       return;
     }
 
+    //send back to the answerer all the ice candidates we have already collected
+    ackFunction(offerToUpdate.offererIceCandidates);
+
     //update property values
     offerToUpdate.answer = offerObj.answer;
     offerToUpdate.answerUserName = userName;
@@ -116,9 +119,16 @@ io.on('connection', (socket)=>{
       const offerInOffers = offers.find(offer=> offer.offererUserName === iceUserName)
       if(offerInOffers){
         offerInOffers.offererIceCandidates.push(iceCandidate)
-        //come back to this...
         //if the answerer is already here (connected), emit the iceCandidate to that user
+        //1. when the answerer answers, all existing ice candidates are sent
+        //2. any candidates that come in after the offer has been answered, will be passed through
+        if(offerInOffers.answererUserName){
+          //pass it through to the other socket
+        }
       }
+    }else{
+      //this ICE is coming from answerer, send to the offerer
+      //pass it through to the other socket
     }
 
     console.log(offers);

@@ -1815,6 +1815,121 @@ const addAnswer = async(offerObj)=>{
 ```
 
 ### 34. Apply ICE candidates - Part 1 - (8min)
+- [`addIceCandidate();`](https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/addIceCandidate)
+- When a website or app (on the local side) using RTCPeerConnection receives a `new ICE candidate` from the remote peer over its signaling channel (ie. socket.io server sent ICE candidate to other side (local side))
+- it delivers the newly-received candidate to the browser's ICE agent by calling `RTCPeerConnection.addIceCandidate()`
+- This adds this `new remote candidate` to the `RTCPeerConnection's remote description`
+- the ice candidate part only starts after we've set `localDescription` on both sides
+- client 1 will have collected some ice candidates by time set `localDescription` is called
+- scripts.js -> use sockets' `emitWithAck`
+
+```js
+//scripts.js
+
+const answerOffer = async (offerObj) =>{
+  //...
+  //emit the answer to the signaling server, so it can emit to CLIENT1
+  socket.emit('newAnswer', offerObj);
+  //expect a response from the server with the already existing ICE candidates
+  const offerIceCandidates = await socket.emitWithAck('newAnswer',offerObj);
+  console.log(offerIceCandidates);
+
+}
+
+
+const createPeerConnection = (offerObj) => {
+  //...
+  peerConnection.addEventListener('icecandidate', e => {
+    //...
+  });
+}
+
+```
+### server.js
+- so on server (server.js) - `socket.on('sendIceCandidateToSignalingServer', iceCandidateObj=>{})`
+  - when ice candidate comes in: for OFFER -> we push it on offerIceCandidates[] 
+- server has access to ackFunction() when called (scripts.js) with `emitWithAck` (socketio v4):
+  - `socket.on('newAnswer', offerObj=> {});` becomes `socket.on('newAnswer', (offerObj, ackFunction) => {});`
+- once knowing the offer to update, if it has ice candidates, send it back `ackFunction(offerToUpdate.offerIceCandidates)`
+- 1. when the answerer answers, all existing ice candidates are sent
+- 2. any candidates that come in after the offer has been answered, will be passed through
+
+```js
+//server.js
+
+socket.on('newAnswer', (offerObj, ackFunction) => {
+  //...
+  const offerToUpdate = offers.find()...
+  if(!offerToUpdate){
+    //...
+  }
+
+  //send back to the answerer all the ice candidates we have already collected
+  ackFunction(offerToUpdate.offerIceCandidates);
+
+  //update property values
+  offerToUpdate.answer = offerObj.answer;
+  offerToUpdate.answerUserName = userName;
+  
+  //socket has a .to() which allows emiting to a "room"
+  //every socket has its own room 
+  socket.to(socketIdToAnswer).emit('answerResponse', offerToUpdate);
+});
+
+socket.on('sendIceCandidateToSignalingServer', iceCandidateObject => {
+  const {didIOffer, iceUserName, iceCandidate} = iceCandidateObject;
+  console.log(`iceCandidate: `, iceCandidate);
+  if(didIOffer){
+    const offerInOffers = offers.find(offer=> offer.offererUserName === iceUserName)
+    if(offerInOffers){
+      //this ICE is coming from offerer, send to the answerer
+      offerInOffers.offererIceCandidates.push(iceCandidate)
+      //if the answerer is already here (connected), emit the iceCandidate to that user
+      //1. when the answerer answers, all existing ice candidates are sent
+      //2. any candidates that come in after the offer has been answered, will be passed through
+      if(offerInOffers.answererUserName){
+        //pass it through to the other socket
+      }
+    }
+    else{
+      //this ICE is coming from answerer, send to the offerer
+      //pass it through to the other socket
+    }
+  }
+
+  console.log(offers);
+});
+
+```
+
+### Troubleshoot
+- DO YOU KNOW WHAT MAKES THIS LESS CONFUSING!!!!
+- it would make things less confusing if you used better variable names.
+  - eg. offerer??? the offer data object
+  - you called it 'offerer' but answer was `answer` not `answerer` and for consistency, it should just be `offer...` and `answer...`
+
+```js
+//currently.. 
+// {
+//   offererUserName: userName, 
+//   offer: newOffer, 
+//   offererIceCandidates:[],
+//   answererUserName:null,
+//   answer:null,
+//   answererIceCandidates:[]
+// }
+
+//this makes more sense...and needs to be updated.. (TODO)
+{
+  offerUserName: userName, 
+  offer: newOffer, 
+  offerIceCandidates:[],
+  answerUserName:null,
+  answer:null,
+  answerIceCandidates:[]
+}
+```
+
 ### 35. Apply ICE candidates - Part 2 - (5min)
 ### 36. Add tracks from remote peer - MAGIC!! - (6min)
 ### 37. Loading on another device on the same network - (5min)
