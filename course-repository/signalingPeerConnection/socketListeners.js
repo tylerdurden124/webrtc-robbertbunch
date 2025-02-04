@@ -10,15 +10,15 @@ socket.on('newOfferAwaiting',offers=>{
     createOfferEls(offers)
 })
 
-// socket.on('answerResponse',offerObj=>{
-//     console.log(offerObj)
-//     addAnswer(offerObj)
-// })
+socket.on('answerResponse',offerObj=>{
+    console.log(offerObj)
+    addAnswer(offerObj)
+})
 
-// socket.on('receivedIceCandidateFromServer',iceCandidate=>{
-//     addNewIceCandidate(iceCandidate)
-//     console.log(iceCandidate)
-// })
+socket.on('receivedIceCandidateFromServer',iceCandidate=>{
+    addNewIceCandidate(iceCandidate)
+    console.log(iceCandidate)
+})
 
 function createOfferEls(offers){
     //make green answer button for this new offer

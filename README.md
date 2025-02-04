@@ -1948,6 +1948,38 @@ const addNewIceCandidate = iceCandidate => {
 ```
 
 ### 36. Add tracks from remote peer - MAGIC!! - (6min)
+- scripts.js -> `createPeerConnection()`
+- this we already did...`peerConnection.addTrack(track, localStream);`
+- now we listen for `track` event handled by `ontrack()` event handler
+- by time `track` event is delivered, the new track has been fully added to peer connection
+- ie. track was added on local peer side of connection it would have been added to peer before gets delivered to remote side.
+
+```js
+//scripts.js
+const createPeerConnection = (offerObj) =>{
+  
+  peerConnection = ...
+  
+  remoteStream = new MediaStream()
+  remoteVideoEl.srcObject = remoteStream;
+
+  localStream.getTracks().forEach(track=>{
+    //add localTracks so they can be sent once the connection is established
+    peerConnection.addTrack(track, localStream);
+  });
+
+  //...
+  peerConnection.addEventListener('track', e=> {
+    console.log('got a track from other peer');
+    console.log(e);
+    e.streams[0].getTracks().forEach(track=>{
+      remoteStream.addTrack(track, remoteStream);
+      console.log('heres an exciting moment....');
+    });
+  });
+}
+```
+
 ### 37. Loading on another device on the same network - (5min)
 
 ---

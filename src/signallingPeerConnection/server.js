@@ -93,7 +93,7 @@ io.on('connection', (socket)=>{
     const socketIdToAnswer = socketToAnswer.socketId;
 
     //we find the offer to update (from server 'offers') so we can emit it
-    const offerToUpdate = offers.find(o => o.offererUserName === offerObj.offerUserName);
+    const offerToUpdate = offers.find(o => o.offererUserName === offerObj.offererUserName);
     if(!offerToUpdate){
       console.log('no offerToUpdate');
       return;
@@ -104,7 +104,7 @@ io.on('connection', (socket)=>{
 
     //update property values
     offerToUpdate.answer = offerObj.answer;
-    offerToUpdate.answerUserName = userName;
+    offerToUpdate.answererUserName = userName;
     
     //socket has a .to() which allows emiting to a "room"
     //every socket has its own room 

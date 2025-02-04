@@ -116,13 +116,15 @@ const createPeerConnection = (offerObj) => {
     //we can pass a config object, and that config object can contain stun servers
     //which will fetch us ICE candidates
     peerConnection = new RTCPeerConnection(peerConfiguration);
+    remoteStream = new MediaStream()
+    remoteVideoEl.srcObject = remoteStream;
 
     //14. add tracks from localStream 
     localStream.getTracks().forEach(track=>{
       peerConnection.addTrack(track, localStream);
     })
 
-    addEventListener('signalingstatechange', (event)=> {
+    peerConnection.addEventListener('signalingstatechange', (event)=> {
       console.log(event);
       console.log(peerConnection.signalingState);
     });
@@ -140,6 +142,15 @@ const createPeerConnection = (offerObj) => {
         });
       }
     });
+
+    peerConnection.addEventListener('track', e=> {
+      console.log('got a track from other peer');
+      console.log(e);
+      e.streams[0].getTracks().forEach(track=>{
+        remoteStream.addTrack(track, remoteStream);
+        console.log('heres an exciting moment....');
+      });
+    }); 
 
     //17.
     if(offerObj){
