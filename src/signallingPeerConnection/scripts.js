@@ -149,10 +149,13 @@ const createPeerConnection = (offerObj) => {
       await peerConnection.setRemoteDescription(offerObj.offer);
       console.log(peerConnection.signalingState); //should be have-remote-offer, because client2 has setRemoteDesc on the offer    
     }
-    
     resolve();
- 
   })
+}
+
+const addNewIceCandidate = iceCandidate => {
+  peerConnection.addIceCandidate(iceCandidate);
+  console.log('===== added ice candidate ====')
 
 }
 

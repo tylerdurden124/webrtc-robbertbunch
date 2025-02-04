@@ -15,10 +15,11 @@ socket.on('answerResponse',offerObj=>{
   addAnswer(offerObj);
 });
 
-// socket.on('receivedIceCandidateFromServer',iceCandidate=>{
-//   addNewIceCandidate(iceCandidate)
-//   console.log(iceCandidate)
-// })
+
+socket.on('receivedIceCandidateFromServer',iceCandidate=>{
+  addNewIceCandidate(iceCandidate); //scripts has the addNewIceCandidate() function
+  console.log(iceCandidate);
+})
 
 function createOfferEls(offers){
   //make green answer button for this new offer

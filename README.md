@@ -1931,6 +1931,22 @@ socket.on('sendIceCandidateToSignalingServer', iceCandidateObject => {
 ```
 
 ### 35. Apply ICE candidates - Part 2 - (5min)
+### PART 2
+- STATUS: both clients are here..and the offer has been accepted
+- server.js ->  on receiving a new ice candidate `sendIceCandidateToSignalingServer`, pass it through (2 use cases)
+  - case1 -> if its coming from offerer
+  - case2 -> if its coming from the answerer
+- socketListeners.js listening for `receivedIceCandidateFromServer`
+- scripts.js 
+
+```js
+//scripts.js
+const addNewIceCandidate = iceCandidate => {
+  peerConnection.addIceCandidate(iceCandidate);
+  console.log('===== added ice candidate ====')
+}
+```
+
 ### 36. Add tracks from remote peer - MAGIC!! - (6min)
 ### 37. Loading on another device on the same network - (5min)
 
