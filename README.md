@@ -1050,15 +1050,13 @@ pnpm i socket.io
 ### mkcert module
 - update server.js to use socket.io and create a https server
 - make https: `npm i -g mkcert` (might need to install globally)
-- mkcert creates self-signed certificates without OpenSSL
+- what is it? - mkcert creates self-signed certificates without OpenSSL
 - `mkcert create-ca` -> create a certificate authority
   - ca.crt
   - ca.key
 
-- `mkcert create-cert` -> create a certificate
-  - cert.crt
-  - cert.key
-
+- the certificate authority is used to sign certificates you sign later
+-  -> create a certificate `mkcert create-cert 192.168.1.104` (`mkcert create-cert <IP or domain>`) 
 - console output:
 
   ```bash
@@ -1981,11 +1979,89 @@ const createPeerConnection = (offerObj) =>{
 ```
 
 ### 37. Loading on another device on the same network - (5min)
+- requirments to test using eg. mobile device
+- same network
+- https
+- switch localhost for ip address of local computer (ipconfig /all) -> IPv4 Address
+- then in scripts, connection to this ip address instead of localhost
+  - `const socket = io.connect('https://192.168.1.144:8181/', {}`
+- now at this point localhost url wont work because dont have CORS policy that allows both ip and localhost
 
+
+### troubleshoot mobile browser CORS issues
+
+- server.js -> `const cors = require("cors");`
+- cors middleware intercepts requests before they reach your static files or routes.
+- If express.static() is placed first, CORS headers won't be applied to static file requests.
+- Allow Connections on Express -> By default, Express binds only to localhost, meaning it's not accessible from other devices.
+
+- Fix: Modify your server file to listen on all network interfaces:
+`app.listen(8181, "0.0.0.0", () => console.log("Server running on port 8181"));`
+
+### troubleshoot fix - REQUIRED
+- you certs are required when trying to access via local ip 
+- to create a certificate for a specific IP address (like 192.168.1.104), you need to specify the IP address in the command
+- `mkcert create-cert 192.168.1.104`
+
+### create a combined.crt that joins (cert.crt AND ca.crt)
+- The correct order for `combined.crt` should be:
+  - Server Certificate (cert.crt) (Your site’s certificate)
+  - Intermediate Certificate(s) (if any)
+  - Root CA Certificate (ca.crt) (The CA that signed your certificate)
+
+STATUS UPDATE - FIX:
+
+- not using ngrok
+- using firefox on mobile (but seems to work on others as well)
+
+### windows firewall allow inbound/outbound ports
+- played around with windows firewall (inbound and outbound)
+  - allowed port 8181
+
+THIS PART SEEMS TO FIX IT (BUT IT DEVIATES FROM THE COURSE)
+
+FIX:
+
+- install certificate (android):Open Settings → Security → Encryption & credentials
+- Tap "Install a certificate"
+- Choose CA certificate (Certificate Authority)
+- Select the combined.crt file
+- The correct order for combined.crt should be:
+  - Server Certificate (cert.crt) (Your site’s certificate)
+  - Root CA Certificate (ca.crt) (The CA that signed your certificate)
+
+- OLD (the course uses just cert.crt) -> server.js: `const cert = fs.readFileSync('cert.crt');`
+- FIX UPDATE -> server.js: `const cert = fs.readFileSync('combined.crt');`
+
+- scripts.js
+```js
+//scripts.js
+const socket = io.connect('https://192.168.1.104:8181/, {
+  auth: {
+    userName,
+    password
+  }
+});
+```
+
+- browser test url:https://192.168.1.104:8181/
+
+### troubleshoot fix - NOT IMPLEMENTED
+- Instead of messing with DNS, you can use ngrok to expose your local server to the internet temporarily. This will allow Let’s Encrypt to verify the domain and issue a valid certificate.
+- instead of trying to install certs etc..
+- to use ngrok, you need an auth token:
+  - https://dashboard.ngrok.com/signup
+  - https://dashboard.ngrok.com/get-started/setup/windows -> ngrok-v3-stable-windows-amd64.zip -> 15mb file that extracts to `ngrok.exe`
+  - put in `c:\Program Files\ngrok\` add this to path. 
+  - https://dashboard.ngrok.com/get-started/your-authtoken
+    - `ngrok config add-authtoken <token code>`
+- scripts.js -> tries to access https://localhost:8181
+- `npm install -g ngrok`
+- Run ngrok to expose your local server: `ngrok http https://ip-address:8181`
+- ngrok will provide you a publicly accessible HTTPS URL, like:
 ---
 
 ## Section 04 - WebRTC Process review - review it
-
 ### 38. The Process (on the board) - (24min)
 ### 39. Code Review - (50min)
 

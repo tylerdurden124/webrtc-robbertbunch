@@ -1,25 +1,49 @@
 // server.js
 const fs = require('fs');
+const cors = require("cors");
 const https = require('https');
+
 const express = require('express');
 const app = express();
 const socketio = require('socket.io');
+
+// Allow all origins (for testing)
+app.use(cors());
+
+// OR allow only local network devices
+// app.use(cors({ origin: /^https:\/\/192\.168\.1\.\d{1,3}(:\d+)?$/, credentials: true }));
+
+// Or allow only your Android IP
+// app.use(cors({ origin: "http://192.168.[mobile ipaddress]:8181" }));
+
+
+// app.use(function(req, res, next) {
+//   res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+//   res.setHeader('Pragma', 'no-cache');
+//   res.setHeader('Expires', '0');
+//   next();
+// });
+
 app.use(express.static(__dirname));
+
 
 //we need a key and cert to run https
 //we generated them with `mkcert create-ca`
 //we generated them with `mkcert create-cert`
 const key = fs.readFileSync('cert.key');
-const cert = fs.readFileSync('cert.crt');
+const cert = fs.readFileSync('combined.crt');
 
 //changed setup so we can use https
 //passed the key and cert to createServer on https
-const expressServer = https.createServer({key, cert}, app);
+const expressServer = https.createServer(
+  {key, cert}, 
+  app
+);
 
 //create our socket server. it will listen to our express port 8181
 const io = socketio(expressServer);
 
-expressServer.listen(8181);
+expressServer.listen(8181, "0.0.0.0", () => console.log("Server running on port 8181"));
 
 //offers will contain objects 
 //{

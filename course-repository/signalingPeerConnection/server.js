@@ -1,11 +1,15 @@
 
 const fs = require('fs');
+const cors = require("cors");
 const https = require('https');
 const express = require('express');
 const app = express();
 const socketio = require('socket.io');
-app.use(express.static(__dirname));
 
+// Allow all origins (for testing)
+app.use(cors());
+
+app.use(express.static(__dirname));
 //we need a key and cert to run https
 //we generated them with mkcert
 // $ mkcert create-ca
@@ -18,7 +22,9 @@ const cert = fs.readFileSync('cert.crt');
 const expressServer = https.createServer({key, cert}, app);
 //create our socket.io server... it will listen to our express port
 const io = socketio(expressServer);
-expressServer.listen(8181);
+expressServer.listen(8181, ()=>{
+    console.log('listening on port https://192.168.1.104:8181');
+});
 
 //offers will contain {}
 const offers = [
