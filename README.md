@@ -2063,7 +2063,16 @@ const socket = io.connect('https://192.168.1.104:8181/, {
 
 ## Section 04 - WebRTC Process review - review it
 ### 38. The Process (on the board) - (24min)
+- NOTE: very important lessons and should be watched before section3
+
 ### 39. Code Review - (50min)
+- NOTE: very important lessons and should be watched before section3
+- references [tasklist](./src/signallingPeerConnection/taskList.txt)
+
+- this lesson (code review) is also really beneficial
+- it feels more helpful if the whole section 4 should have come before section3
+- this overview explains a lot of concepts and would be beneficial if watched before section3 as a high level overview.
+- Learners should watch this...and come back to it and watch it until the learner undestands the flow of webRTC, and i feel it is crucial that this happens before a deep dive covered in section3: rtcPeerConnection
 
 ---
 
