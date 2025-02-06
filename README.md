@@ -2097,6 +2097,58 @@ width=600
 - hangup -> terminates feed
 
 ### 41. Project Structure and Front-end Setup - (6min)
+## Backend
+- `teleLegalSite/teleLegal-back-end/`
+  - `npm init -y`
+  - `pnpm i socket.io express`
+
+### folder structure
+  - `index.js`
+    - imports `server.js`
+    - imports `socketServer.js`
+  - `expressRoutes.js`
+    - imports `server.js`
+  - `server.js`
+  - `socketServer.js`
+  - `certs/`
+    - create the certs: `mkcert create-ca`
+    - create the certs: `mkcert create-cert <ip>`
+
+## Frontend
+- `teleLegalSite/telelegal-front-end/`
+  - `npx create-react-app .`
+  - `certs/`
+    - create the certs: `mkcert create-ca`
+    - create the certs: `mkcert create-cert <ip>`
+  - package.json:
+
+### https/ssl support
+
+- install cross-env (cross OS compatibility)
+- `pnpm install cross-env --save-dev`
+- `cross-env` ensures compatibility across Windows, macOS, and Linux.
+  - `cross-env HTTPS=true SSL_CRT_FILE=./certs/cert.crt SSL_KEY_FILE=./certs/cert.key react-scripts start`
+
+  ```json
+  "scripts": {
+    "start": "cross-env HTTPS=true SSL_CRT_FILE=./certs/cert.crt SSL_KEY_FILE=./certs/cert.key react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  ```
+### run
+- `pnpm run start`
+
+#### troubleshoot - 'HTTPS' is not recognized as an internal or external command,
+- NOTE: this is if you are not using `cross-env` 
+- The command is now slightly different for windows! Scripts needs to use "set" in order to run. Use this for "start":
+- or windows (only):
+  - cmd: `set HTTPS=true && set SSL_CRT_FILE=./certs/cert.crt && set SSL_KEY_FILE=./certs/cert.key && react-scripts start`
+  - powershell: `$env:HTTPS="true"; $env:SSL_CRT_FILE="./certs/cert.crt"; $env:SSL_KEY_FILE="./certs/cert.key"; npm start`
+- linux (only): No need for set or &&. The variables are set for that command only.
+  - `HTTPS=true SSL_CRT_FILE=./certs/cert.crt SSL_KEY_FILE=./certs/cert.key react-scripts start`
+
 ### 42. Chrome and localhost certs - (1min)
 ### 43. Back-end Setup - (8min)
 ### 44. Creating a JWT & link to simulate scheduling - (11min)
