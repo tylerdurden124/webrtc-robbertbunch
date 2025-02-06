@@ -2252,6 +2252,100 @@ import socketConnection from './utilities/socketConnection';
 - serverside: cmd -> console output -> `PlexYjPEoA3oU_rwAAAB has connected`
 
 ### 44. Creating a JWT & link to simulate scheduling - (11min)
+
+<img
+src='exercise_files/section05-webrtc+react-44-creating-jwt-and-join-link-simulate-scheduling.png'
+alt='section05-webrtc+react-44-creating-jwt-and-join-link-simulate-scheduling.png'
+width=600
+/>
+
+- creating the link that user opens up the react app
+  - the point is the client shouldnt have to make an account...
+
+```js
+//back-end-telelegal/expressRoutes.js
+
+//this route is for us to test..
+//we will just add a link which takes us to react site (already with the right info for CLIENT1 to make an offer)
+//in production -> a receptionist / calender/scheduling app would send this out
+app.get('/user-link', (req, res)=>{
+
+  //data for the end-user's appointment
+  const appData = {
+    professionalsFullName: 'Robert Bunch, M.D', //name of person user wants to speak to
+    apptDate: Date.now()
+  }
+
+  //TODO: encode data in token
+
+  res.json('this is a test route');
+})
+```
+
+- encoding the data
+
+<img
+src='exercise_files/section05-webrtc+react-44-creating-jwt-encoding.png'
+alt='section05-webrtc+react-44-creating-jwt-encoding.png'
+width=600
+/>
+
+- `pnpm i jsonwebtoken`
+
+### usage - sign (create token)
+- `jwt.sign(payload, secret, [options, callback])`
+- `secret` encodes our data
+- returns a link: `res.send('https://localhost:3000/join-video?token='+token);`
+
+### verifying token
+- the token is the full encoded jwt
+- it is returned from visiting `https://localhost:3000/user-link`
+- `jwt.verify(token, secret, function(err, decoded){})`
+- synchronous way: `const decoded = jwt.verify(token, secret)` 
+  - decoded is the payload data...
+
+```js
+//back-end-telelegal/expressRoutes.js
+const jwt = require('jsonwebtoken');
+const linkSecret = 'dfvcv4asodihs97s9fsd'
+
+app.get('/user-link', (req, res)=>{
+  //data for the end-user's appointment
+  const appData = {
+    professionalsFullName: 'Robert Bunch, M.D', //name of person user wants to speak to
+    apptDate: Date.now()
+  };
+  //TODO: encode data in token
+  const token = jwt.sign(appData, linkSecret);
+  //sent to wherever react is running..
+  res.send('https://localhost:3000/join-video?token='+token);
+});
+
+app.get('/validate-link', (req, res)=>{
+  const token = req.query.token;
+  const decodedData = jwt.verify(token, linkSecret);
+  res.json(decodedData);
+});
+```
+### test
+- frontend
+
+### get token
+- server is listening port 9000
+
+- required: get the token first from `/user-link` 
+- `https://localhost:9000/user-link`
+
+### validate token
+- test by validating:
+  - enter token from `user-link/`
+
+```
+https://localhost:9000/validate-link?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm9mZXNzaW9uYWxzRnVsbE5hbWUiOiJSb2JlcnQgQnVuY2gsIE0uRCIsImFwcHREYXRlIjoxNzM4ODMzNjYyNjk3LCJpYXQiOjE3Mzg4MzM2NjJ9.8rEPsFhaRO9sz_SRInDmMSC7JvMNgWrqYlnnx_t6DOA
+```
+- output -> `{"professionalsFullName":"Robert Bunch, M.D","apptDate":1738833662697,"iat":1738833662}`
+
+
 ### 45. Add React-Router for our front-end - (5min)
 ### 46. Setup Join-Video route and get the decoded data in React - (8min)
 ### 47. Add starting components - (10min)
