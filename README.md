@@ -2078,6 +2078,24 @@ const socket = io.connect('https://192.168.1.104:8181/, {
 
 ## Section 05 - webRTC and React - TeleLegal site
 ### 40. Project Demo - (6min)
+
+<img
+src='exercise_files/section05-webrtc+react-40-project-demo.png'
+alt='section05-webrtc+react-40-project-demo.png'
+width=600
+/>
+
+### tech stack
+- signal server/socket.io
+- react (Create React App) / redux
+- webrtc
+
+### todo
+- a join video link is sent for meeting request
+- join a teleLegal chat
+- call -> shows feed
+- hangup -> terminates feed
+
 ### 41. Project Structure and Front-end Setup - (6min)
 ### 42. Chrome and localhost certs - (1min)
 ### 43. Back-end Setup - (8min)
