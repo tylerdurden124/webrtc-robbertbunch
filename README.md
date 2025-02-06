@@ -2156,6 +2156,101 @@ width=600
 - NOTE: with updated chrome, this option doesnt exist
 
 ### 43. Back-end Setup - (8min)
+
+## Backend
+- `mkcert create-ca`
+- `mkcert create-cert`
+- move certificates and private keys to certs/
+
+- back-end-telelegal/server.js
+```js
+//back-end-telelegal/server.js
+//this is where we create the express and socket.io server
+
+const fs = require('fs'); //the file system
+const https = require('https');
+const express = require('express');
+const socketio = require('socket.io');
+
+const app = express();
+app.use(express.static(__dirname+'/public')); //anything in public will be served up locally
+
+const key = fs.readFileSync('./certs/cert.key');
+const cert = fs.readFileSync('./certs/cert.crt');
+
+const expressServer = https.createServer({key, cert}, app);
+const io = socketio(expressServer, {
+  cors:[
+    'https://localhost:3000',
+    'https://localhost:3001', 
+    'https://localhost:3002'
+  ]
+});
+
+expressServer.listen(9000);
+module.exports = {io, expressServer, app};
+```
+
+- back-end-telelegal/expressRoutes.js
+```js
+//back-end-telelegal/expressRoutes.js
+//all our express stuff happens (routes)
+
+const io = require("./server").io;
+
+io.on("connection", (socket) => {
+  console.log(socket.id, "has connected");
+});
+  
+```
+- back-end-telelegal/socketServer.js
+```js
+//back-end-telelegal/socketServer.js
+//all our socketServer stuff happens here
+const app = require("./server").app;
+
+app.get('/test', (req, res)=>{
+  res.json('this is a test route');
+})
+```
+
+- back-end-telelegal/index.js
+```js
+//back-end-telelegal/index.js
+//this is our entry point run nodemon here..
+require('./socketServer');
+require('./expressRoutes');
+
+```
+
+- back-end-telelegal/package.json
+```json
+// package.json
+//...
+ "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon index.js"
+  },
+```
+
+## frontend
+- `pnpm i socket.io-client`
+
+```js
+//front-end-telelegal/src/utilities/socketConnection.js
+import {io} from 'socket.io-client';
+io.connect('https://localhost:9000');
+```
+
+- this code will run when imported...
+```js
+//front-end-telelegal/src/App.js
+import socketConnection from './utilities/socketConnection';
+```
+
+## backend 
+- serverside: cmd -> console output -> `PlexYjPEoA3oU_rwAAAB has connected`
+
 ### 44. Creating a JWT & link to simulate scheduling - (11min)
 ### 45. Add React-Router for our front-end - (5min)
 ### 46. Setup Join-Video route and get the decoded data in React - (8min)
