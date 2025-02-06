@@ -2150,6 +2150,11 @@ width=600
   - `HTTPS=true SSL_CRT_FILE=./certs/cert.crt SSL_KEY_FILE=./certs/cert.key react-scripts start`
 
 ### 42. Chrome and localhost certs - (1min)
+- Chrome has started enforcing certificate validation against other domains.
+- When you run React on a separate port, it may give you an error that your express server has an invalid certificate. To get around that, you'll have to update your flags in Chrome. This link will get you there, just set it on, and if needed, turn it off when you aren't working.
+- `chrome://flags/#allow-insecure-localhost` 
+- NOTE: with updated chrome, this option doesnt exist
+
 ### 43. Back-end Setup - (8min)
 ### 44. Creating a JWT & link to simulate scheduling - (11min)
 ### 45. Add React-Router for our front-end - (5min)
