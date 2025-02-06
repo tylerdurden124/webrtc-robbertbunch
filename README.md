@@ -2347,6 +2347,52 @@ https://localhost:9000/validate-link?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.
 
 
 ### 45. Add React-Router for our front-end - (5min)
+- frontend/ cleanup (CRA)
+- frontend/
+- todo: install: `pnpm i react-router-dom`
+
+```js
+//front-end-telelegal/src/videoComponents/mainVideoPage.js
+const MainVideoPage = ()=>{
+  return (
+    <h1>Main video Page</h1>
+  )
+}
+
+export default MainVideoPage;
+```
+
+- NOTE: React Router v7 -> uses `<Route Component={}/>` and you can pass in just the name, doesnt need jsx element
+
+```js
+//front-end-telelegal/src/App.js
+import {BrowserRouter, Routes, Route, Link} from 'react-router-dom';
+import socketConnection from './utilities/socketConnection';
+import MainVideoPage from './videoComponents/MainVideoPage';
+import './App.css';
+
+const Home = () => <h1>Home page</h1>
+
+function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route exact path="/" Component={Home}/>
+        <Route path="/join-video" Component={MainVideoPage}/>
+      </Routes>
+    </BrowserRouter>
+    
+  );
+}
+
+export default App;
+
+```
+
+### testing
+- start up backend/ `pnpm run start`
+- start up frontend/ `pnpm run start`
+
 ### 46. Setup Join-Video route and get the decoded data in React - (8min)
 ### 47. Add starting components - (10min)
 ### 48. Wire up redux and make callStatus reducer - (8min)
