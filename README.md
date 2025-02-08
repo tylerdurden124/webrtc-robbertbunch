@@ -2394,6 +2394,151 @@ export default App;
 - start up frontend/ `pnpm run start`
 
 ### 46. Setup Join-Video route and get the decoded data in React - (8min)
+- NOTE: watch starting at 6min18sec for quick runthrough of code
+
+- TODO: visit backend route to get token link (https://localhost:9000/user-link)
+- gives something like -> https://localhost:3000/join-video?token=abc
+  - this opens up on frontend onto MainVideoPage (`front-end-telelegal/src/videoComponents/MainVideoPage.js`)
+  - and what it immediately tries to do is get the token and call BACKEND's link `https://localhost:9000/validate-link`
+  - BACKEND: `/validate-link` gets token from request body
+
+- TODO: get token from main video page 
+- TODO: send this up to server to get decoded
+- `import {useSearchParams} from 'react-router-dom';` (use to get the query string)
+- we can use `useSearchParams` and grab the token var out of the query string
+- `const [searchParams, setSearchParams] = useSearchParams();` 
+
+```js
+const token = searchParams.get('token'); //grab the token var out of the query string
+```
+
+- install `pnpm i axios`
+- install cors `pnpm i cors`
+
+### click on join-video link...
+- sends token to server (server path `/join-video`)
+- token gets decoded
+- sent back to client
+- update MainVideoPage
+
+### expressRoutes
+- change req.query to req.body
+- backend: 
+  - `server.js` 
+    -> `app.use(cors());`
+    - allows app.post() on server...
+
+### express.json()
+    -> `app.use(express.json());`
+- app.use(express.json()) is middleware in Express that parses incoming requests with JSON payloads.
+- It makes the parsed data available on `req.body`    
+
+```js
+app.post('/example', (req, res) => {
+  console.log(req.body);  // The parsed JSON object from the request body
+  res.send('Data received');
+});
+```
+
+### get token
+- with this change visit and get the link: `https://localhost:9000/user-link`...
+
+- visit link with token: `https://localhost:3000/join-video?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm9mZXNzaW9uYWxzRnVsbE5hbWUiOiJSb2JlcnQgQnVuY2gsIE0uRCIsImFwcHREYXRlIjoxNzM4OTg4MjcyMjYyLCJpYXQiOjE3Mzg5ODgyNzJ9.kf1weNxkMkc8ouoqGlUeG55TzI4UQ7Ey0LV0PXlwUVc`
+
+- it opens `src/videoComponents/MainVideoPage`
+  - which calls server `https://localhost:9000/validate-link` and passes the token (with the body of request)
+
+- on sever: handled by `expressRoutes.js`
+  - decode and read token
+
+- get the token from body of post request (express.json())
+- NOTE: we changed this from `req.query.token` (anyone using url could see token)
+
+```js
+//expressRoutes.js
+
+app.post('/validate-link', (req, res)=>{
+  //get the token from body of post request (express.json())
+  const token = req.body.token;   //was req.query.token;
+
+  //decode jwt with secret
+  const decodedData = jwt.verify(token, linkSecret);
+
+  //send the decoded data (token object) back to the frontend
+  res.json(decodedData);
+});
+```
+
+- you should be able to read the token data
+
+<img
+src='exercise_files/section05-webrtc+react-46-join-video-reading-data-from-token.png'
+alt='section05-webrtc+react-46-join-video-reading-data-from-token.png'
+width=600
+/>
+
+```js
+//front-end-telegal/src/videoComponents/MainVideoPage.js
+import {useEffect} from 'react';
+import {useSearchParams} from 'react-router-dom';
+import axios from 'axios';
+
+const MainVideoPage = ()=>{
+
+  //query string finder
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  useEffect(()=>{
+    //grab the token out of the query string
+    const token = searchParams.get('token');
+    
+    console.log(token);
+    const fetchDecodedToken = async ()=>{
+      const resp = await axios.post('https://localhost:9000/validate-link', {token})
+    }
+    fetchDecodedToken();
+
+  }, []);
+
+  return (
+    <h1>Main video Page</h1>
+  )
+}
+
+export default MainVideoPage;
+```
+
+### server.js
+- import cors
+- enable express.json() -> ALLOWS parsing json in the body with body parser
+  - which enables us to use it in expressRoutes.js
+- can access post() because of Cors
+
+```js
+//expressRoutes.js
+app.post('/validate-link', (req, res)=>{
+  //get the token from body of post request (possible with express.json())
+  const token = req.body.token;   //was req.query.token;
+  const decodedData = jwt.verify(token, linkSecret);
+
+  //send the decoded data (our object) back to the frontend
+  res.json(decodedData);
+
+});
+```
+
+```js
+//backend/server.js
+const cors = require('cors');
+
+const app = express();
+app.use(cors());//this opens up api to ANY domain
+
+app.use(express.static(__dirname+'/public'));
+app.use(express.json());   //ALLOWS parsing json in the body with body parser
+
+```
+
 ### 47. Add starting components - (10min)
 ### 48. Wire up redux and make callStatus reducer - (8min)
 ### 49. Add action buttons, bootstrap, and fontawesome - (7min)
