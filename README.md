@@ -2558,6 +2558,9 @@ width=600
     - VideoComponents.css
   - `/redux-elements/reducers/`
     - callStatusReducer.js
+    - rootReducers.js
+  - `/redux-elements/actions/`
+    - 
 
 - in `MainVideoPage.js/`:
   - import `VideoComponents.css`
@@ -2574,7 +2577,7 @@ width=600
 
 - note `/user-link` creates `apptDate: Date.now()` to make a date in future, add time in milliseconds
   - `const [momentText, setMomentText] = useState(moment(apptInfo.apptDate).fromNow());`
-  
+
 ```js
 //MainVideoPage.js
 
@@ -2659,6 +2662,83 @@ export default ChatWindow;
 
 
 ### 48. Wire up redux and make callStatus reducer - (8min)
+- TODO: wire up redux -> `/redux-elements/reducers/`
+
+#### callStatusReducer
+
+```js
+//callStatusReducer.js
+
+const initState = {
+  current: "idle", //negotiating, progress, complete
+  video: "off", //video feed status: "off" "enabled" "disabled" "complete"
+  audio: "off", //audio feed status: "off" "enabled" "disabled" "complete"
+  audioDevice: 'default', //enumerate devices, chosen audio input device (we dont care about the output device)
+  videoDevice: 'default',
+  shareScreen: false, //is user sharing screen or not
+  haveMedia: false, //is there a localStream, has getUserMedia been run
+
+  haveCreatedOffer: false,
+}
+
+export default (state = initState, action)=>{
+  if (action.type === "UPDATE_CALL_STATUS"){
+    const copyState = {...state}
+    copyState[action.payload.prop] = action.payload.value
+    return copyState
+  }else if((action.type === "LOGOUT_ACTION") || (action.type === "NEW_VERSION")){
+    return initState
+  }else{
+    return state
+  }
+}
+
+```
+
+### rootReducer
+- combines all reducers
+
+```js
+//rootReducer.js
+import { combineReducers } from "redux";
+import callStatusReducer from './callStatusReducer';
+
+const rootReducer = combineReducers({
+  callStatus: callStatusReducer,
+});
+
+export default rootReducer;
+```
+
+#### index
+- import rootReducer
+- create the store (`const theStore = createStore(rootReducer)`) using the `rootReducer`
+- in index.js, `import {Provider} from 'react-redux'`
+- wrap `<Provider store={theStore}><App/></Provider>` around `<App>`
+
+```js
+//index.js
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App';
+import {createStore} from 'redux' //get createStore method so we can make a redux store
+import {Provider} from 'react-redux'; //get provider component to wrap around our whole app
+
+import rootReducer from './redux-elements/reducers/rootReducer';
+const theStore = createStore(rootReducer);
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(
+  <Provider store={theStore}>
+    <App />
+  </Provider>
+);
+
+```
+
+
+- `/redux-elements/actions/`
+
 ### 49. Add action buttons, bootstrap, and fontawesome - (7min)
 ### 50. getUserMedia() and store the stream in redux - (9min)
 ### 51. Create peerConnection and store it in redux - (7min)
