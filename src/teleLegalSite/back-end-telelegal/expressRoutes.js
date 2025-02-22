@@ -5,7 +5,7 @@ const linkSecret = 'dfvcv4asodihs97s9fsd';
 
 app.get('/', (req, res)=> {
   res.json('this is the default route');
-})
+});
 
 app.get('/test', (req, res)=>{
   res.json('this is a test route');
@@ -19,7 +19,7 @@ app.get('/user-link', (req, res)=>{
   //data for the end-user's appointment
   const appData = {
     professionalsFullName: 'Robert Bunch, M.D', //name of person user wants to speak to
-    apptDate: Date.now()
+    apptDate: Date.now() + 500000, //delay a bit by eg. 8min
   };
 
   //TODO: encode data in token
@@ -38,4 +38,3 @@ app.post('/validate-link', (req, res)=>{
   res.json(decodedData);
 
 });
-```

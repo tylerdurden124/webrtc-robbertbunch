@@ -2540,6 +2540,124 @@ app.use(express.json());   //ALLOWS parsing json in the body with body parser
 ```
 
 ### 47. Add starting components - (10min)
+- outcomes:
+
+<img
+src='exercise_files/section05-webrtc+react-47-add-starting-components-outcome.png'
+alt='section05-webrtc+react-47-add-starting-components-outcome.png'
+width=600
+/>
+
+- get from exercise files: 
+
+- `telelegal-front-end/src`:
+  - `/videoComponents/`
+    - ActionButtons.js
+    - CallInfo.js
+    - HangupButton.js
+    - VideoComponents.css
+  - `/redux-elements/reducers/`
+    - callStatusReducer.js
+
+- in `MainVideoPage.js/`:
+  - import `VideoComponents.css`
+  - import ChatWindow from './ChatWindow';
+  - update clasName = "main-video-Page"
+
+- `CallInfo` will be a modal
+  - uses `moment` package
+    - `pnpm i moment`
+    - `import moment from 'moment'`
+
+- create `<ChatWindow/>` component
+  - VideoComponents/ChatWindow.js
+
+- note `/user-link` creates `apptDate: Date.now()` to make a date in future, add time in milliseconds
+  - `const [momentText, setMomentText] = useState(moment(apptInfo.apptDate).fromNow());`
+  
+```js
+//MainVideoPage.js
+
+  //...
+  return (
+    <div clasName = "main-video-Page">
+      <div className="video-chat-wrapper">
+        {/* div to hold remote video AND local video, AND chat window */}
+        <video id="large-feed" autoPlay controls playsInline></video>
+        <video id="own-feed" autoPlay controls playsInline></video>
+        {apptInfo.professionalsFullName ? <CallInfo apptInfo={apptInfo} /> : <></>}
+        <ChatWindow/>
+      </div>
+    </div>
+  )
+```
+
+### CallInfo
+- it needs to import `moment`
+- we call moment, give it unix timestamp (aaptInfo.apptDate).fromNow()
+```js
+//VideoComponents/CallInfo.js
+import moment from 'moment'
+import { useEffect, useState } from 'react'
+
+const CallInfo = ({ apptInfo }) => {
+
+  const [momentText, setMomentText] = useState(moment(apptInfo.apptDate).fromNow())
+
+  useEffect(() => {
+    const timeInterval = setInterval(() => {
+      setMomentText(moment(apptInfo.apptDate).fromNow())
+      // console.log("Updating time")
+    }, 5000)
+    //clean up function
+    return () => {
+      // console.log("Clearing")
+      clearInterval(timeInterval);
+    };
+  }, []);
+
+  return (
+    <div className="call-info">
+      <h1>
+        {apptInfo.professionalsFullName} has been notified.<br />
+        Your appointment is {momentText}.
+      </h1>
+    </div>
+  )
+}
+
+export default CallInfo
+
+```
+
+```js
+//VideoComponents/ChatWindow.js
+const ChatWindow = () => {
+  return ( 
+    <div className={`chat-window`}>
+      <h1>Chat</h1>
+    </div>
+  )
+}
+export default ChatWindow;
+```
+
+### testing
+### get token
+- with this change visit and get the link: `https://localhost:9000/user-link`...
+
+- visit link with token: `https://localhost:3000/join-video?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm9mZXNzaW9uYWxzRnVsbE5hbWUiOiJSb2JlcnQgQnVuY2gsIE0uRCIsImFwcHREYXRlIjoxNzM4OTg4MjcyMjYyLCJpYXQiOjE3Mzg5ODgyNzJ9.kf1weNxkMkc8ouoqGlUeG55TzI4UQ7Ey0LV0PXlwUVc`
+
+- it opens `src/videoComponents/MainVideoPage`
+  - which calls server `https://localhost:9000/validate-link` and passes the token (with the body of request)
+
+- on sever: handled by `expressRoutes.js`
+  - decode and read token
+
+- get the token from body of post request (express.json())
+- NOTE: we changed this from `req.query.token` (anyone using url could see token)
+
+
 ### 48. Wire up redux and make callStatus reducer - (8min)
 ### 49. Add action buttons, bootstrap, and fontawesome - (7min)
 ### 50. getUserMedia() and store the stream in redux - (9min)
